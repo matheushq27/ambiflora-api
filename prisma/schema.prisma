@@ -9,15 +9,6 @@ datasource db {
   schemas  = ["ambiflora", "public"]
 }
 
-enum UserType {
-  SUPER_ADMIN
-  DEVELOPER
-  ADMIN
-  USER
-
-  @@schema("ambiflora")
-}
-
 model Company {
   id             Int      @id @default(autoincrement())
   name           String
@@ -75,65 +66,73 @@ model AnmProcesses {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralCondicaoPropriedadeSolo {
-  IDCondicaoPropriedadeSolo String  @id
+  IDCondicaoPropriedadeSolo String?
   DSCondicaoPropriedadeSolo String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralDocumentoLegal {
-  IDDocumentoLegal String  @id
+  IDDocumentoLegal String?
   DSDocumentoLegal String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralEvento {
-  IDEvento String  @id
+  IDEvento String?
   DSEvento String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralFaseProcesso {
-  IDFaseProcesso String  @id
+  IDFaseProcesso String?
   DSFaseProcesso String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralMotivoEncerramentoSubstancia {
-  IDMotivoEncerramentoSubstancia String  @id
+  IDMotivoEncerramentoSubstancia String?
   DSMotivoEncerramentoSubstancia String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralMunicipio {
-  IDMunicipio String  @id
+  IDMunicipio String?
   NMMunicipio String?
   SGUF        String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralPessoa {
-  IDPessoa  String  @id
+  IDPessoa  String?
   NRCPFCNPJ String?
   TPPessoa  String?
   NMPessoa  String?
 
+  @@ignore
   @@schema("public")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcesso {
-  DSProcesso                      String  @id
+  DSProcesso                      String?
   NRProcesso                      String?
   NRAnoProcesso                   String?
   BTAtivo                         String?
@@ -146,28 +145,26 @@ model MineralProcesso {
   DTPrioridade                    String?
   QTAreaHA                        String?
 
-  mineralProcessoAssociacao MineralProcessoAssociacao[]
-
+  @@ignore
   @@schema("public")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoAssociacao {
-  DSProcessoAssociado String  @id
   DSProcesso          String?
+  DSProcessoAssociado String?
   IDTipoAssociacao    String?
   DTAssociacao        String?
   DTDesassociacao     String?
   OBAssociacao        String?
 
-  mineralProcesso       MineralProcesso?       @relation(fields: [DSProcesso], references: [DSProcesso])
-  mineralTipoAssociacao MineralTipoAssociacao? @relation(fields: [IDTipoAssociacao], references: [IDTipoAssociacao])
-
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoDocumentacao {
-  DSProcesso      String
+  DSProcesso      String?
   IDTipoDocumento String?
   DTProtocolo     String?
 
@@ -177,7 +174,7 @@ model MineralProcessoDocumentacao {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoEvento {
-  DSProcesso      String
+  DSProcesso      String?
   IDEvento        String?
   DTEvento        String?
   OBEvento        String?
@@ -189,7 +186,7 @@ model MineralProcessoEvento {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoMunicipio {
-  DSProcesso  String
+  DSProcesso  String?
   IDMunicipio String?
 
   @@ignore
@@ -198,7 +195,7 @@ model MineralProcessoMunicipio {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoPessoa {
-  DSProcesso                    String
+  DSProcesso                    String?
   IDPessoa                      String?
   IDTipoRelacao                 String?
   IDTipoResponsabilidadeTecnica String?
@@ -213,7 +210,7 @@ model MineralProcessoPessoa {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoPropriedadeSolo {
-  DSProcesso                String
+  DSProcesso                String?
   IDCondicaoPropriedadeSolo String?
 
   @@ignore
@@ -222,7 +219,7 @@ model MineralProcessoPropriedadeSolo {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoSubstancia {
-  DSProcesso                     String
+  DSProcesso                     String?
   IDSubstancia                   String?
   IDTipoUsoSubstancia            String?
   IDMotivoEncerramentoSubstancia String?
@@ -235,7 +232,7 @@ model MineralProcessoSubstancia {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoTitulo {
-  DSProcesso               String
+  DSProcesso               String?
   NRTitulo                 String?
   IDDocumentoLegal         String?
   IDTipoDocumentoLegal     String?
@@ -249,98 +246,117 @@ model MineralProcessoTitulo {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralSituacaoDocumentoLegal {
-  IDSituacaoDocumentoLegal String  @id
+  IDSituacaoDocumentoLegal String?
   DSSituacaoDocumentoLegal String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralSubstancia {
-  IDSubstancia String  @id
+  IDSubstancia String?
   NMSubstancia String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoAssociacao {
-  IDTipoAssociacao String  @id
+  IDTipoAssociacao String?
   DSTipoAssociacao String?
 
-  mineralProcessoAssociacao MineralProcessoAssociacao[]
-
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoDocumento {
-  IDTipoDocumento String  @id
+  IDTipoDocumento String?
   DSTipoDocumento String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoDocumentoLegal {
-  IDTipoDocumentoLegal String  @id
+  IDTipoDocumentoLegal String?
   DSTipoDocumentoLegal String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoRelacao {
-  IDTipoRelacao String  @id
+  IDTipoRelacao String?
   DSTipoRelacao String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoRepresentacaoLegal {
-  IDTipoRepresentacaoLegal String  @id
+  IDTipoRepresentacaoLegal String?
   DSTipoRepresentacaoLegal String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoRequerimento {
-  IDTipoRequerimento String  @id
+  IDTipoRequerimento String?
   DSTipoRequerimento String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoResponsabilidadeTecnica {
-  IDTipoResponsabilidadeTecnica String  @id
+  IDTipoResponsabilidadeTecnica String?
   DSTipoResponsabilidadeTecnica String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralTipoUsoSubstancia {
-  IDTipoUsoSubstancia String  @id
+  IDTipoUsoSubstancia String?
   DSTipoUsoSubstancia String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralUnidadeAdministrativaRegional {
-  IDUnidadeAdministrativaRegional String  @id
+  IDUnidadeAdministrativaRegional String?
   DSUnidadeAdministrativaRegional String?
 
+  @@ignore
   @@schema("public")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralUnidadeProtocolizadora {
-  IDUnidadeProtocolizadora String  @id
+  IDUnidadeProtocolizadora String?
   DSUnidadeProtocolizadora String?
 
+  @@ignore
   @@schema("public")
+}
+
+enum UserType {
+  SUPER_ADMIN
+  DEVELOPER
+  ADMIN
+  USER
+
+  @@schema("ambiflora")
 }
