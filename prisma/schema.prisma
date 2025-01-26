@@ -9,6 +9,15 @@ datasource db {
   schemas  = ["ambiflora", "public"]
 }
 
+enum UserType {
+  SUPER_ADMIN
+  DEVELOPER
+  ADMIN
+  USER
+
+  @@schema("ambiflora")
+}
+
 model Company {
   id             Int      @id @default(autoincrement())
   name           String
@@ -350,11 +359,4 @@ model MineralUnidadeProtocolizadora {
   @@schema("public")
 }
 
-enum UserType {
-  SUPER_ADMIN
-  DEVELOPER
-  ADMIN
-  USER
 
-  @@schema("ambiflora")
-}
