@@ -132,7 +132,6 @@ model MineralPessoa {
   @@schema("public")
 }
 
-
 model MineralProcesso {
   DSProcesso                      String  @id
   NRProcesso                      String?
@@ -153,15 +152,15 @@ model MineralProcesso {
 }
 
 model MineralProcessoAssociacao {
-  DSProcessoAssociado       String @id
-  DSProcesso                String?
-  IDTipoAssociacao          String?
-  DTAssociacao              String?
-  DTDesassociacao           String?
-  OBAssociacao              String?
-  mineralProcessoDSProcesso String?
+  DSProcessoAssociado String  @id
+  DSProcesso          String?
+  IDTipoAssociacao    String?
+  DTAssociacao        String?
+  DTDesassociacao     String?
+  OBAssociacao        String?
 
-  mineralProcesso           MineralProcesso? @relation(fields: [mineralProcessoDSProcesso], references: [DSProcesso])
+  mineralProcesso       MineralProcesso?       @relation(fields: [DSProcesso], references: [DSProcesso])
+  mineralTipoAssociacao MineralTipoAssociacao? @relation(fields: [IDTipoAssociacao], references: [IDTipoAssociacao])
 
   @@schema("public")
 }
@@ -268,6 +267,8 @@ model MineralSubstancia {
 model MineralTipoAssociacao {
   IDTipoAssociacao String  @id
   DSTipoAssociacao String?
+
+  mineralProcessoAssociacao MineralProcessoAssociacao[]
 
   @@schema("public")
 }
