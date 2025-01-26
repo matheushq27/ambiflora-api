@@ -130,9 +130,8 @@ model MineralPessoa {
   @@schema("public")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcesso {
-  DSProcesso                      String?
+  DSProcesso                      String @id
   NRProcesso                      String?
   NRAnoProcesso                   String?
   BTAtivo                         String?
@@ -145,7 +144,6 @@ model MineralProcesso {
   DTPrioridade                    String?
   QTAreaHA                        String?
 
-  @@ignore
   @@schema("public")
 }
 
