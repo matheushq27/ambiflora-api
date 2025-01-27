@@ -130,10 +130,12 @@ model MineralMunicipio {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralPessoa {
-  IDPessoa  String @id
+  IDPessoa  String  @id
   NRCPFCNPJ String?
   TPPessoa  String?
   NMPessoa  String?
+
+  mineralProcessoPessoa MineralProcessoPessoa[]
 
   @@schema("public")
 }
@@ -202,15 +204,17 @@ model MineralProcessoMunicipio {
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MineralProcessoPessoa {
   DSProcesso                    String?
-  IDPessoa                      String?
+  IDPessoa                      String
   IDTipoRelacao                 String?
   IDTipoResponsabilidadeTecnica String?
   IDTipoRepresentacaoLegal      String?
   DTPrazoArrendamento           String?
   DTInicioVigencia              String?
   DTFimVigencia                 String?
+  MineralPessoa                 MineralPessoa? @relation(fields: [IDPessoa], references: [IDPessoa])
+  mineralPessoaIDPessoa         String?
+  IdProcessoPessoa              Int            @id @default(autoincrement())
 
-  @@ignore
   @@schema("public")
 }
 

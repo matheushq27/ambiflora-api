@@ -13,18 +13,27 @@ export class AppService {
   ) { }
   async getHello(): Promise<any> {
 
-    const result = await this.prisma.mineralProcesso.findFirst({
+    /*  const result = await this.prisma.mineralProcesso.findFirst({
+       where: {
+         DSProcesso: '813.654/1973'
+       },
+       select: {
+ 
+       },
+     })
+  */
+    const mineralPessoa = await this.prisma.mineralPessoa.findMany({
       where: {
-        DSProcesso: '813.654/1973'
+        NRCPFCNPJ: '76807353000160'
       },
-      select:{
-          
-      },
+      include: {
+        mineralProcessoPessoa: true
+      }
     })
-    
-    const aaa = await this.prisma.mineralPessoa
 
-    return 'hello'
+    return {
+      mineralPessoa
+    }
 
     /* const cpfCnpj = '81180624149'
 
