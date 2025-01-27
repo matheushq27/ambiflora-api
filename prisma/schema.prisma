@@ -140,7 +140,7 @@ model MineralPessoa {
 }
 
 model MineralProcesso {
-  DSProcesso                      String @id
+  DSProcesso                      String  @id
   NRProcesso                      String?
   NRAnoProcesso                   String?
   BTAtivo                         String?
@@ -358,5 +358,3 @@ model MineralUnidadeProtocolizadora {
   @@ignore
   @@schema("public")
 }
-
-
