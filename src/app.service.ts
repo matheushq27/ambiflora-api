@@ -18,9 +18,11 @@ export class AppService {
         DSProcesso: '813.654/1973'
       },
       select:{
-
-      }
+          
+      },
     })
+    
+    const aaa = await this.prisma.mineralPessoa
 
     return 'hello'
 
