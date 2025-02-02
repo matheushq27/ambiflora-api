@@ -22,7 +22,7 @@ export class AppService {
        },
      })
   */
-    const mineralPessoa = await this.prisma.mineralPessoa.findMany({
+  /*   const mineralPessoa = await this.prisma.mineralPessoa.findMany({
       where: {
         NRCPFCNPJ: '76807353000160'
       },
@@ -33,7 +33,7 @@ export class AppService {
 
     return {
       mineralPessoa
-    }
+    } */
 
     /* const cpfCnpj = '81180624149'
 

@@ -28,13 +28,6 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService, private readonly pagination: Pagination) { }
 
   async create(createUserDto: CreateUserDto, companyId: number) {
-
-    const teste = await this.prisma.mineralProcesso.findFirst({
-      where:{
-        
-      }
-    })
-
     const { name, email, surname, userType } = createUserDto
 
     const userExist = await this.findOne({

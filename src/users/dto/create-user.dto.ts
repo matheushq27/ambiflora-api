@@ -70,11 +70,6 @@ export class CreateUserDto {
     @IsEnum(UserTypeEnum, {message: 'Tipo de usuário incorreto'})
     userType: UserType
    
-     /**
-     * Um array contendo os ids das câmeras que o usuário terá permissão de acesso
-     * @example  [1, 2, 3]
-     */
-    cameras?: number[]
 }
 
      /**
