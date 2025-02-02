@@ -9,6 +9,15 @@
         "include": "emails/templates/**/*.hbs",
         "outDir": "dist/src"
       }
+    ],
+    "plugins":[
+      {
+        "name": "@nestjs/swagger",
+        "options":{
+          "classValidatorShim": false,
+          "introspectComments": true
+        }
+      }
     ]
   }
 }
