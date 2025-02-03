@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { CompaniesModule } from './companhies/companies.module';
 import { AuthenticateModule } from './authenticate/authenticate.module';
 import { EmailsModule } from './emails/emails.module';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { EmailsModule } from './emails/emails.module';
     PrismaModule,
     AuthenticateModule, 
     ScrapeProcessesModule,
-    EmailsModule
+    EmailsModule,
+    CustomersModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

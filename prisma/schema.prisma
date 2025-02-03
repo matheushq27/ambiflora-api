@@ -14,18 +14,24 @@ enum UserType {
   USER
 }
 
+enum CusomerType {
+  NATURAL_PERSON
+  CORPORATE_ENTITY
+}
+
 model Company {
-  id             Int      @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   name           String
   city           String
   state          String
   street         String
-  postalCode     Int      @map("postal_code")
+  postalCode     Int        @map("postal_code")
   country        String
-  locationNumber Int      @map("location_number")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  locationNumber Int        @map("location_number")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
   user           User[]
+  Customer       Customer[]
 
   @@map("companies")
 }
@@ -46,22 +52,41 @@ model User {
   @@map("users")
 }
 
+model Customer {
+  id           Int            @id @default(autoincrement())
+  name         String
+  surname      String
+  email        String
+  cpf          String      
+  cnpj         String      
+  companyId    Int?           @map("company_id")
+  type         CusomerType    @default(NATURAL_PERSON) @map("type")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  anmProcesses AnmProcesses[]
+  Company      Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("customers")
+}
+
 model AnmProcesses {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   number          Int
   year            Int
   userId          Int?
-  cardholderName  String   @map("cardholder_name")
-  cpfCnpj         String   @map("cpf_cnpj")
-  currentPhase    String   @map("current_phase")
+  cardholderName  String    @map("cardholder_name")
+  cpfCnpj         String    @map("cpf_cnpj")
+  currentPhase    String    @map("current_phase")
   municipalities  String
-  requirementType String   @map("requirement_type")
+  requirementType String    @map("requirement_type")
   situation       String
   substances      String
-  typesOfUse      String   @map("types_of_use")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-  User            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  typesOfUse      String    @map("types_of_use")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Customer        Customer? @relation(fields: [customerId], references: [id])
+  customerId      Int?
 
   @@map("anm_processes")
 }
@@ -116,6 +141,7 @@ model MineralPessoa {
   NMPessoa  String?
 
   mineralProcessoPessoa MineralProcessoPessoa[]
+
   @@ignore
 }
 
@@ -184,6 +210,7 @@ model MineralProcessoPessoa {
   MineralPessoa                 MineralPessoa? @relation(fields: [IDPessoa], references: [IDPessoa])
   mineralPessoaIDPessoa         String?
   IdProcessoPessoa              Int            @id @default(autoincrement())
+
   @@ignore
 }
 

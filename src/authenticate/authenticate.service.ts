@@ -22,10 +22,6 @@ export class AuthenticateService {
 
     const isPasswordValid = await compare(authenticateDto.password, password);
 
-    console.log(password)
-    console.log(authenticateDto.password)
-    console.log(isPasswordValid)
-
     if (!isPasswordValid) {
       throw new UnauthorizedException('Suas credenciais não combinam');
     }
