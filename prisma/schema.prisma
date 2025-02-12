@@ -7,18 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserType {
-  SUPER_ADMIN
-  DEVELOPER
-  ADMIN
-  USER
-}
-
-enum CusomerType {
-  NATURAL_PERSON
-  CORPORATE_ENTITY
-}
-
 model Company {
   id             Int        @id @default(autoincrement())
   name           String
@@ -30,8 +18,8 @@ model Company {
   locationNumber Int        @map("location_number")
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
-  user           User[]
   Customer       Customer[]
+  user           User[]
 
   @@map("companies")
 }
@@ -57,8 +45,8 @@ model Customer {
   name         String
   surname      String
   email        String
-  cpf          String      
-  cnpj         String      
+  cpf          String
+  cnpj         String
   companyId    Int?           @map("company_id")
   type         CusomerType    @default(NATURAL_PERSON) @map("type")
   createdAt    DateTime       @default(now()) @map("created_at")
@@ -84,101 +72,124 @@ model AnmProcesses {
   typesOfUse      String    @map("types_of_use")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
-  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Customer        Customer? @relation(fields: [customerId], references: [id])
   customerId      Int?
+  Customer        Customer? @relation(fields: [customerId], references: [id])
+  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("anm_processes")
 }
 
 model MineralCondicaoPropriedadeSolo {
-  IDCondicaoPropriedadeSolo String?
-  DSCondicaoPropriedadeSolo String?
+  IDCondicaoPropriedadeSolo      String                           @id(map: "key_condicao_solo")
+  DSCondicaoPropriedadeSolo      String?
+  MineralProcessoPropriedadeSolo MineralProcessoPropriedadeSolo[]
 
-  @@ignore
+  
 }
 
 model MineralDocumentoLegal {
-  IDDocumentoLegal String?
-  DSDocumentoLegal String?
+  IDDocumentoLegal      String                  @id(map: "key_documento_legal")
+  DSDocumentoLegal      String?
+  MineralProcessoTitulo MineralProcessoTitulo[]
 
-  @@ignore
+  
 }
 
 model MineralEvento {
-  IDEvento String?
-  DSEvento String?
+  IDEvento              String                  @id(map: "key_evento")
+  DSEvento              String?
+  MineralProcessoEvento MineralProcessoEvento[]
 
-  @@ignore
+  
 }
 
 model MineralFaseProcesso {
-  IDFaseProcesso String?
-  DSFaseProcesso String?
+  IDFaseProcesso  String            @id(map: "key_fase_processo")
+  DSFaseProcesso  String?
+  MineralProcesso MineralProcesso[]
 
-  @@ignore
+  
 }
 
 model MineralMotivoEncerramentoSubstancia {
-  IDMotivoEncerramentoSubstancia String?
+  IDMotivoEncerramentoSubstancia String                      @id(map: "key_motivo_encerramento_substancia")
   DSMotivoEncerramentoSubstancia String?
+  MineralProcessoSubstancia      MineralProcessoSubstancia[]
 
-  @@ignore
+  
 }
 
 model MineralMunicipio {
-  IDMunicipio String?
-  NMMunicipio String?
-  SGUF        String?
+  IDMunicipio              String                     @id(map: "key_municipio")
+  NMMunicipio              String?
+  SGUF                     String?
+  MineralProcessoMunicipio MineralProcessoMunicipio[]
 
-  @@ignore
+  
 }
 
 model MineralPessoa {
-  IDPessoa  String  @id
-  NRCPFCNPJ String?
-  TPPessoa  String?
-  NMPessoa  String?
-
+  IDPessoa              String                  @id(map: "key_pessoa")
+  NRCPFCNPJ             String?
+  TPPessoa              String?
+  NMPessoa              String?
   mineralProcessoPessoa MineralProcessoPessoa[]
 
-  @@ignore
+  
 }
 
 model MineralProcesso {
-  DSProcesso                      String  @id
-  NRProcesso                      String?
-  NRAnoProcesso                   String?
-  BTAtivo                         String?
-  NRNUP                           String?
-  IDTipoRequerimento              String?
-  IDFaseProcesso                  String?
-  IDUnidadeAdministrativaRegional String?
-  IDUnidadeProtocolizadora        String?
-  DTProtocolo                     String?
-  DTPrioridade                    String?
-  QTAreaHA                        String?
+  DSProcesso                           String                                @id(map: "key_processo")
+  NRProcesso                           String?
+  NRAnoProcesso                        String?
+  BTAtivo                              String?
+  NRNUP                                String?
+  IDTipoRequerimento                   String?
+  IDFaseProcesso                       String?
+  IDUnidadeAdministrativaRegional      String?
+  IDUnidadeProtocolizadora             String?
+  DTProtocolo                          String?
+  DTPrioridade                         String?
+  QTAreaHA                             String?
+  MineralFaseProcesso                  MineralFaseProcesso?                  @relation(fields: [IDFaseProcesso], references: [IDFaseProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_fase_processo")
+  MineralTipoRequerimento              MineralTipoRequerimento?              @relation(fields: [IDTipoRequerimento], references: [IDTipoRequerimento], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_tipo_requerimento")
+  MineralUnidadeAdministrativaRegional MineralUnidadeAdministrativaRegional? @relation(fields: [IDUnidadeAdministrativaRegional], references: [IDUnidadeAdministrativaRegional], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_unidade_administrativa")
+  MineralUnidadeProtocolizadora        MineralUnidadeProtocolizadora?        @relation(fields: [IDUnidadeProtocolizadora], references: [IDUnidadeProtocolizadora], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_unidade_protocolizadora")
+  MineralProcessoAssociacao            MineralProcessoAssociacao[]
+  MineralProcessoDocumentacao          MineralProcessoDocumentacao[]
+  MineralProcessoEvento                MineralProcessoEvento[]
+  MineralProcessoMunicipio             MineralProcessoMunicipio[]
+  MineralProcessoPessoa                MineralProcessoPessoa[]
+  MineralProcessoPropriedadeSolo       MineralProcessoPropriedadeSolo[]
+  MineralProcessoSubstancia            MineralProcessoSubstancia[]
+  MineralProcessoTitulo                MineralProcessoTitulo[]
 
-  @@ignore
+  
 }
 
 model MineralProcessoAssociacao {
-  DSProcesso          String?
-  DSProcessoAssociado String?
-  IDTipoAssociacao    String?
-  DTAssociacao        String?
-  DTDesassociacao     String?
-  OBAssociacao        String?
+  DSProcesso            String?
+  DSProcessoAssociado   String?
+  IDTipoAssociacao      String?
+  DTAssociacao          String?
+  DTDesassociacao       String?
+  OBAssociacao          String?
+  id                    Int                    @id(map: "pk_processo_associacao") @default(autoincrement())
+  MineralTipoAssociacao MineralTipoAssociacao? @relation(fields: [IDTipoAssociacao], references: [IDTipoAssociacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_associacao")
+  MineralProcesso       MineralProcesso?       @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_associacao")
 
-  @@ignore
+  
 }
 
 model MineralProcessoDocumentacao {
-  DSProcesso      String?
-  IDTipoDocumento String?
-  DTProtocolo     String?
+  DSProcesso           String?
+  IDTipoDocumento      String?
+  DTProtocolo          String?
+  id                   Int                   @id(map: "pk_processo_documentacao") @default(autoincrement())
+  MineralTipoDocumento MineralTipoDocumento? @relation(fields: [IDTipoDocumento], references: [IDTipoDocumento], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_documento")
+  MineralProcesso      MineralProcesso?      @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_documentacao")
 
-  @@ignore
+  
 }
 
 model MineralProcessoEvento {
@@ -187,143 +198,189 @@ model MineralProcessoEvento {
   DTEvento        String?
   OBEvento        String?
   DSPublicacaoDOU String?
+  id              Int              @id(map: "pk_processo_evento") @default(autoincrement())
+  MineralEvento   MineralEvento?   @relation(fields: [IDEvento], references: [IDEvento], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_evento")
+  MineralProcesso MineralProcesso? @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_evento")
 
-  @@ignore
+  
 }
 
 model MineralProcessoMunicipio {
-  DSProcesso  String?
-  IDMunicipio String?
+  DSProcesso       String?
+  IDMunicipio      String?
+  id               Int               @id(map: "pk_processo_municipio") @default(autoincrement())
+  MineralMunicipio MineralMunicipio? @relation(fields: [IDMunicipio], references: [IDMunicipio], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_municipio")
+  MineralProcesso  MineralProcesso?  @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_municipio")
 
-  @@ignore
+  
 }
 
 model MineralProcessoPessoa {
-  DSProcesso                    String?
-  IDPessoa                      String
-  IDTipoRelacao                 String?
-  IDTipoResponsabilidadeTecnica String?
-  IDTipoRepresentacaoLegal      String?
-  DTPrazoArrendamento           String?
-  DTInicioVigencia              String?
-  DTFimVigencia                 String?
-  MineralPessoa                 MineralPessoa? @relation(fields: [IDPessoa], references: [IDPessoa])
-  mineralPessoaIDPessoa         String?
-  IdProcessoPessoa              Int            @id @default(autoincrement())
+  DSProcesso                         String?
+  IDPessoa                           String?
+  IDTipoRelacao                      String?
+  IDTipoResponsabilidadeTecnica      String?
+  IDTipoRepresentacaoLegal           String?
+  DTPrazoArrendamento                String?
+  DTInicioVigencia                   String?
+  DTFimVigencia                      String?
+  id                                 Int                                 @id(map: "pk_processo_pessoa") @default(autoincrement())
+  MineralPessoa                      MineralPessoa?                      @relation(fields: [IDPessoa], references: [IDPessoa], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_pessoa")
+  MineralProcesso                    MineralProcesso?                    @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_pessoa")
+  MineralTipoRepresentacaoLegal      MineralTipoRepresentacaoLegal?      @relation(fields: [IDTipoRepresentacaoLegal], references: [IDTipoRepresentacaoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_representacao_legal")
+  MineralTipoResponsabilidadeTecnica MineralTipoResponsabilidadeTecnica? @relation(fields: [IDTipoResponsabilidadeTecnica], references: [IDTipoResponsabilidadeTecnica], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_responsabilidade_tecnica")
+  MineralTipoRelacao                 MineralTipoRelacao?                 @relation(fields: [IDTipoRelacao], references: [IDTipoRelacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_tipo_relacao")
 
-  @@ignore
+  
 }
 
 model MineralProcessoPropriedadeSolo {
-  DSProcesso                String?
-  IDCondicaoPropriedadeSolo String?
+  DSProcesso                     String?
+  IDCondicaoPropriedadeSolo      String?
+  id                             Int                             @id(map: "pk_processo_propriedadesolo") @default(autoincrement())
+  MineralProcesso                MineralProcesso?                @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_propriedade_solo")
+  MineralCondicaoPropriedadeSolo MineralCondicaoPropriedadeSolo? @relation(fields: [IDCondicaoPropriedadeSolo], references: [IDCondicaoPropriedadeSolo], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_propriedade_solo")
 
-  @@ignore
+  
 }
 
 model MineralProcessoSubstancia {
-  DSProcesso                     String?
-  IDSubstancia                   String?
-  IDTipoUsoSubstancia            String?
-  IDMotivoEncerramentoSubstancia String?
-  DTInicioVigencia               String?
-  DTFimVigencia                  String?
+  DSProcesso                          String?
+  IDSubstancia                        String?
+  IDTipoUsoSubstancia                 String?
+  IDMotivoEncerramentoSubstancia      String?
+  DTInicioVigencia                    String?
+  DTFimVigencia                       String?
+  id                                  Int                                  @id(map: "pk_processo_substancia") @default(autoincrement())
+  MineralMotivoEncerramentoSubstancia MineralMotivoEncerramentoSubstancia? @relation(fields: [IDMotivoEncerramentoSubstancia], references: [IDMotivoEncerramentoSubstancia], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_encerramento_substancia")
+  MineralProcesso                     MineralProcesso?                     @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_substancia")
+  MineralSubstancia                   MineralSubstancia?                   @relation(fields: [IDSubstancia], references: [IDSubstancia], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_substancia")
+  MineralTipoUsoSubstancia            MineralTipoUsoSubstancia?            @relation(fields: [IDTipoUsoSubstancia], references: [IDTipoUsoSubstancia], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_tipo_substancia")
 
-  @@ignore
+  
 }
 
 model MineralProcessoTitulo {
-  DSProcesso               String?
-  NRTitulo                 String?
-  IDDocumentoLegal         String?
-  IDTipoDocumentoLegal     String?
-  IDSituacaoDocumentoLegal String?
-  DTPublicacao             String?
-  DTVencimento             String?
+  DSProcesso                    String?
+  NRTitulo                      String?
+  IDDocumentoLegal              String?
+  IDTipoDocumentoLegal          String?
+  IDSituacaoDocumentoLegal      String?
+  DTPublicacao                  String?
+  DTVencimento                  String?
+  id                            Int                            @id(map: "pk_processo_titulo") @default(autoincrement())
+  MineralProcesso               MineralProcesso?               @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_titulo")
+  MineralDocumentoLegal         MineralDocumentoLegal?         @relation(fields: [IDDocumentoLegal], references: [IDDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_documento")
+  MineralSituacaoDocumentoLegal MineralSituacaoDocumentoLegal? @relation(fields: [IDSituacaoDocumentoLegal], references: [IDSituacaoDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_situacao_documento")
+  MineralTipoDocumentoLegal     MineralTipoDocumentoLegal?     @relation(fields: [IDTipoDocumentoLegal], references: [IDTipoDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_tipo_documento")
 
-  @@ignore
+  
 }
 
 model MineralSituacaoDocumentoLegal {
-  IDSituacaoDocumentoLegal String?
+  IDSituacaoDocumentoLegal String                  @id(map: "key_situacao_documento_legal")
   DSSituacaoDocumentoLegal String?
+  MineralProcessoTitulo    MineralProcessoTitulo[]
 
-  @@ignore
+  
 }
 
 model MineralSubstancia {
-  IDSubstancia String?
-  NMSubstancia String?
+  IDSubstancia              String                      @id(map: "key_substancia")
+  NMSubstancia              String?
+  MineralProcessoSubstancia MineralProcessoSubstancia[]
 
-  @@ignore
+  
 }
 
 model MineralTipoAssociacao {
-  IDTipoAssociacao String?
-  DSTipoAssociacao String?
+  IDTipoAssociacao          String                      @id(map: "key_associacao")
+  DSTipoAssociacao          String?
+  MineralProcessoAssociacao MineralProcessoAssociacao[]
 
-  @@ignore
+  
 }
 
 model MineralTipoDocumento {
-  IDTipoDocumento String?
-  DSTipoDocumento String?
+  IDTipoDocumento             String                        @id(map: "key_documento")
+  DSTipoDocumento             String?
+  MineralProcessoDocumentacao MineralProcessoDocumentacao[]
 
-  @@ignore
+  
 }
 
 model MineralTipoDocumentoLegal {
-  IDTipoDocumentoLegal String?
-  DSTipoDocumentoLegal String?
+  IDTipoDocumentoLegal  String                  @id(map: "key_tipo_documento_legal")
+  DSTipoDocumentoLegal  String?
+  MineralProcessoTitulo MineralProcessoTitulo[]
 
-  @@ignore
+  
 }
 
 model MineralTipoRelacao {
-  IDTipoRelacao String?
-  DSTipoRelacao String?
+  IDTipoRelacao         String                  @id(map: "key_tipo_relacao")
+  DSTipoRelacao         String?
+  MineralProcessoPessoa MineralProcessoPessoa[]
 
-  @@ignore
+  
 }
 
 model MineralTipoRepresentacaoLegal {
-  IDTipoRepresentacaoLegal String?
+  IDTipoRepresentacaoLegal String                  @id(map: "key_tipo_representacao")
   DSTipoRepresentacaoLegal String?
+  MineralProcessoPessoa    MineralProcessoPessoa[]
 
-  @@ignore
+  
 }
 
 model MineralTipoRequerimento {
-  IDTipoRequerimento String?
+  IDTipoRequerimento String            @id(map: "key_tipo_requerimento")
   DSTipoRequerimento String?
+  MineralProcesso    MineralProcesso[]
 
-  @@ignore
+  
 }
 
 model MineralTipoResponsabilidadeTecnica {
-  IDTipoResponsabilidadeTecnica String?
+  IDTipoResponsabilidadeTecnica String                  @id(map: "key_tipo_responsabilidade")
   DSTipoResponsabilidadeTecnica String?
+  MineralProcessoPessoa         MineralProcessoPessoa[]
 
-  @@ignore
+  
 }
 
 model MineralTipoUsoSubstancia {
-  IDTipoUsoSubstancia String?
-  DSTipoUsoSubstancia String?
+  IDTipoUsoSubstancia       String                      @id(map: "key_tipo_uso_substancia")
+  DSTipoUsoSubstancia       String?
+  MineralProcessoSubstancia MineralProcessoSubstancia[]
 
-  @@ignore
+  
 }
 
 model MineralUnidadeAdministrativaRegional {
-  IDUnidadeAdministrativaRegional String?
+  IDUnidadeAdministrativaRegional String            @id(map: "key_unidade_adm_regional")
   DSUnidadeAdministrativaRegional String?
+  MineralProcesso                 MineralProcesso[]
 
-  @@ignore
+  
 }
 
 model MineralUnidadeProtocolizadora {
-  IDUnidadeProtocolizadora String?
+  IDUnidadeProtocolizadora String            @id(map: "key_unidade_protocolizadora")
   DSUnidadeProtocolizadora String?
+  MineralProcesso          MineralProcesso[]
 
-  @@ignore
+  
+}
+
+enum UserType {
+  SUPER_ADMIN
+  DEVELOPER
+  ADMIN
+  USER
+}
+
+enum CusomerType {
+  NATURAL_PERSON
+  CORPORATE_ENTITY
 }
