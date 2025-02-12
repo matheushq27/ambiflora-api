@@ -1,11 +1,13 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
+import { pagination } from "prisma-extension-pagination";
 
 @Injectable()
-export class PrismaService 
-extends PrismaClient 
-implements OnModuleInit, OnModuleDestroy {
-    constructor(){
+export class PrismaService
+    extends PrismaClient
+    implements OnModuleInit, OnModuleDestroy {
+    //private pages
+    constructor() {
         super({
             log: ['warn', 'error']
         })
@@ -13,11 +15,15 @@ implements OnModuleInit, OnModuleDestroy {
         console.log('PrismaService instance created');
     }
 
-    async onModuleInit(){
+    async onModuleInit() {
         return await this.$connect()
     }
 
-    async onModuleDestroy(){
+    async onModuleDestroy() {
         return await this.$disconnect()
+    }
+
+    paginationExtension() {
+        return this.$extends(pagination());
     }
 }

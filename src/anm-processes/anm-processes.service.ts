@@ -1,18 +1,17 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ScrapeService } from 'src/scrape-processes/services/scrape.service';
 
 @Injectable()
 export class AnmProcessesService {
   constructor(
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly scrapeService: ScrapeService
   ) { }
-  async create() {
-    /* const processes = await this.prisma.anmProcesses.create({
-      data: {
-        number: 1,
-        year: 2025,
-        userId: 1
-      }
-    }) */
+  async consult({ cpfCnpj }: { cpfCnpj: string }, paginate = { page: 1, perPage: 10 }) {
+    const { processes } = await this.scrapeService.findAll({ cpfCnpj })
+    return {
+      processes
+    }
   }
 }

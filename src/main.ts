@@ -24,9 +24,14 @@ async function bootstrap() {
     .addTag('companies')
     .addTag('users')
     .addTag('customers')
+    .addTag('anmProcesses')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    }
+  });
 
   app.enableCors();
   await app.listen(port);

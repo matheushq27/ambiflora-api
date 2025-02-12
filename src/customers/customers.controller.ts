@@ -20,30 +20,22 @@ export class UsersController {
   @UsePipes(new ZodValidationPipe(createCustomerBodySchema))
   @ApiBody({ type: CreateCustomerDto })
   async create(@Body() body: CreateCustomerBodySchema, @CurrentUser() userPayload: UserPayload) {
+    const { cpf, cnpj } = body
 
-    const { cpf, cnpj, type } = body
-
-    if (cpf && !cpfValidator.isValid(cpf)) {
-      throw new BadRequestException('O CPF inserido é inválido')
-    }
-
-    if (cnpj && !cnpjValidator.isValid(cnpj)) {
-      throw new BadRequestException('O CNPJ inserido é inválido')
-    }
+    this.validateCpfCnpj({ cpf, cnpj })
 
     return await this.customersService.create(body, userPayload.user.companyId)
   }
 
   @Get()
-  findAll(
-    @Query('paginate', ParseBoolPipe) paginate: boolean,
+  async findAll(
+    @CurrentUser() userPayload: UserPayload,
+    /*   @Query('name') name: string,
+    @Query('email') email: string, */
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
-    @Query('name') name: string,
-    @Query('email') email: string,
-    @CurrentUser() userPayload: UserPayload
   ) {
-
+    return await this.customersService.findMany(userPayload.user.companyId, { page, perPage })
   }
 
   @Get(':id')
@@ -52,12 +44,32 @@ export class UsersController {
   }
 
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() body: CreateCustomerBodySchema) {
+    const { cpf, cnpj } = body
 
+    this.validateCpfCnpj({ cpf, cnpj })
+
+    return await this.customersService.update(id, body)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.customersService.delete(id)
+  }
 
+  @Post('/delete-many')
+  @HttpCode(200)
+  async deleteAll(@Body() body: number[]) {
+    return await this.customersService.deleteMany(body)
+  }
+
+  validateCpfCnpj({ cpf, cnpj }: { cpf: string, cnpj: string }) {
+    if (cpf && !cpfValidator.isValid(cpf)) {
+      throw new BadRequestException('O CPF inserido é inválido')
+    }
+
+    if (cnpj && !cnpjValidator.isValid(cnpj)) {
+      throw new BadRequestException('O CNPJ inserido é inválido')
+    }
   }
 }

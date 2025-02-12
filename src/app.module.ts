@@ -13,6 +13,7 @@ import { CompaniesModule } from './companhies/companies.module';
 import { AuthenticateModule } from './authenticate/authenticate.module';
 import { EmailsModule } from './emails/emails.module';
 import { CustomersModule } from './customers/customers.module';
+import { AnmProcessesModule } from './anm-processes/anm-processes.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { CustomersModule } from './customers/customers.module';
     AuthenticateModule, 
     ScrapeProcessesModule,
     EmailsModule,
-    CustomersModule
+    CustomersModule,
+    AnmProcessesModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
