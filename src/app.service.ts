@@ -13,62 +13,11 @@ export class AppService {
   ) { }
   async getHello(): Promise<any> {
 
-    /*  const result = await this.prisma.mineralProcesso.findFirst({
-       where: {
-         DSProcesso: '813.654/1973'
-       },
-       select: {
- 
-       },
-     })
-  */
-  /*   const mineralPessoa = await this.prisma.mineralPessoa.findMany({
-      where: {
-        NRCPFCNPJ: '76807353000160'
-      },
-      include: {
-        mineralProcessoPessoa: true
+    const aaa = await this.prisma.mineralProcesso.findFirst({
+      where:{
+        
       }
     })
-
-    return {
-      mineralPessoa
-    } */
-
-    /* const cpfCnpj = '81180624149'
-
-
-    const uuuu = await this.prisma.user.findFirst({
-      where: {
-        id: 1
-      },
-      include: {
-        anmProcesses: true
-      }
-    })
-
-    const processes = await this.prisma.anmProcesses.findMany({
-      where: {
-        cpfCnpj
-      }
-    })
-
-    const senEmail = processes.map(({ number, year, currentPhase, requirementType }) => {
-      return {
-        name: requirementType,
-        numberYear: `${number}/${year}`,
-        lastPhase: currentPhase,
-        currentPhase
-      }
-    })
-
-    await this.email.sendEmailUpdateProcesses({
-      to: 'matheus.e.arruda@gmail.com',
-      processes: senEmail,
-      user: {
-        name: 'Matheus'
-      }
-    }) */
   }
 
   async handle() {

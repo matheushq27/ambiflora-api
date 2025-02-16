@@ -19,13 +19,20 @@ export class AnmProcessesController {
     async consult(
         @CurrentUser() userPayload: UserPayload,
         @Query('cpfCnpj') cpfCnpj: string,
+        @Query('active') active: string,
+        @Query('relationship') relationship: string,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
     ) {
-        return await this.anmProcessesService.consult({ cpfCnpj }, {
+        return await this.anmProcessesService.consult({ cpfCnpj, active, relationship }, {
             page,
             perPage
         })
+    }
+
+    @Get('/options/relationship')
+    async findOptionsRelationship() {
+        return await this.anmProcessesService.findOptionsRelationship()
     }
 
     @Get(':id')
