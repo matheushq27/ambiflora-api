@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -83,40 +84,30 @@ model MineralCondicaoPropriedadeSolo {
   IDCondicaoPropriedadeSolo      String                           @id(map: "key_condicao_solo")
   DSCondicaoPropriedadeSolo      String?
   MineralProcessoPropriedadeSolo MineralProcessoPropriedadeSolo[]
-
-  
 }
 
 model MineralDocumentoLegal {
   IDDocumentoLegal      String                  @id(map: "key_documento_legal")
   DSDocumentoLegal      String?
   MineralProcessoTitulo MineralProcessoTitulo[]
-
-  
 }
 
 model MineralEvento {
   IDEvento              String                  @id(map: "key_evento")
   DSEvento              String?
   MineralProcessoEvento MineralProcessoEvento[]
-
-  
 }
 
 model MineralFaseProcesso {
   IDFaseProcesso  String            @id(map: "key_fase_processo")
   DSFaseProcesso  String?
   MineralProcesso MineralProcesso[]
-
-  
 }
 
 model MineralMotivoEncerramentoSubstancia {
   IDMotivoEncerramentoSubstancia String                      @id(map: "key_motivo_encerramento_substancia")
   DSMotivoEncerramentoSubstancia String?
   MineralProcessoSubstancia      MineralProcessoSubstancia[]
-
-  
 }
 
 model MineralMunicipio {
@@ -124,8 +115,6 @@ model MineralMunicipio {
   NMMunicipio              String?
   SGUF                     String?
   MineralProcessoMunicipio MineralProcessoMunicipio[]
-
-  
 }
 
 model MineralPessoa {
@@ -134,8 +123,6 @@ model MineralPessoa {
   TPPessoa              String?
   NMPessoa              String?
   mineralProcessoPessoa MineralProcessoPessoa[]
-
-  
 }
 
 model MineralProcesso {
@@ -163,8 +150,6 @@ model MineralProcesso {
   MineralProcessoPropriedadeSolo       MineralProcessoPropriedadeSolo[]
   MineralProcessoSubstancia            MineralProcessoSubstancia[]
   MineralProcessoTitulo                MineralProcessoTitulo[]
-
-  
 }
 
 model MineralProcessoAssociacao {
@@ -177,8 +162,6 @@ model MineralProcessoAssociacao {
   id                    Int                    @id(map: "pk_processo_associacao") @default(autoincrement())
   MineralTipoAssociacao MineralTipoAssociacao? @relation(fields: [IDTipoAssociacao], references: [IDTipoAssociacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_associacao")
   MineralProcesso       MineralProcesso?       @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_associacao")
-
-  
 }
 
 model MineralProcessoDocumentacao {
@@ -188,8 +171,6 @@ model MineralProcessoDocumentacao {
   id                   Int                   @id(map: "pk_processo_documentacao") @default(autoincrement())
   MineralTipoDocumento MineralTipoDocumento? @relation(fields: [IDTipoDocumento], references: [IDTipoDocumento], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_documento")
   MineralProcesso      MineralProcesso?      @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_documentacao")
-
-  
 }
 
 model MineralProcessoEvento {
@@ -201,8 +182,6 @@ model MineralProcessoEvento {
   id              Int              @id(map: "pk_processo_evento") @default(autoincrement())
   MineralEvento   MineralEvento?   @relation(fields: [IDEvento], references: [IDEvento], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_evento")
   MineralProcesso MineralProcesso? @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_evento")
-
-  
 }
 
 model MineralProcessoMunicipio {
@@ -211,8 +190,6 @@ model MineralProcessoMunicipio {
   id               Int               @id(map: "pk_processo_municipio") @default(autoincrement())
   MineralMunicipio MineralMunicipio? @relation(fields: [IDMunicipio], references: [IDMunicipio], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_municipio")
   MineralProcesso  MineralProcesso?  @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_municipio")
-
-  
 }
 
 model MineralProcessoPessoa {
@@ -230,8 +207,6 @@ model MineralProcessoPessoa {
   MineralTipoRepresentacaoLegal      MineralTipoRepresentacaoLegal?      @relation(fields: [IDTipoRepresentacaoLegal], references: [IDTipoRepresentacaoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_representacao_legal")
   MineralTipoResponsabilidadeTecnica MineralTipoResponsabilidadeTecnica? @relation(fields: [IDTipoResponsabilidadeTecnica], references: [IDTipoResponsabilidadeTecnica], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_responsabilidade_tecnica")
   MineralTipoRelacao                 MineralTipoRelacao?                 @relation(fields: [IDTipoRelacao], references: [IDTipoRelacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_tipo_relacao")
-
-  
 }
 
 model MineralProcessoPropriedadeSolo {
@@ -240,8 +215,6 @@ model MineralProcessoPropriedadeSolo {
   id                             Int                             @id(map: "pk_processo_propriedadesolo") @default(autoincrement())
   MineralProcesso                MineralProcesso?                @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_propriedade_solo")
   MineralCondicaoPropriedadeSolo MineralCondicaoPropriedadeSolo? @relation(fields: [IDCondicaoPropriedadeSolo], references: [IDCondicaoPropriedadeSolo], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_propriedade_solo")
-
-  
 }
 
 model MineralProcessoSubstancia {
@@ -256,8 +229,6 @@ model MineralProcessoSubstancia {
   MineralProcesso                     MineralProcesso?                     @relation(fields: [DSProcesso], references: [DSProcesso], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_processos_por_substancia")
   MineralSubstancia                   MineralSubstancia?                   @relation(fields: [IDSubstancia], references: [IDSubstancia], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_substancia")
   MineralTipoUsoSubstancia            MineralTipoUsoSubstancia?            @relation(fields: [IDTipoUsoSubstancia], references: [IDTipoUsoSubstancia], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_tipo_substancia")
-
-  
 }
 
 model MineralProcessoTitulo {
@@ -273,104 +244,78 @@ model MineralProcessoTitulo {
   MineralDocumentoLegal         MineralDocumentoLegal?         @relation(fields: [IDDocumentoLegal], references: [IDDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_documento")
   MineralSituacaoDocumentoLegal MineralSituacaoDocumentoLegal? @relation(fields: [IDSituacaoDocumentoLegal], references: [IDSituacaoDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_situacao_documento")
   MineralTipoDocumentoLegal     MineralTipoDocumentoLegal?     @relation(fields: [IDTipoDocumentoLegal], references: [IDTipoDocumentoLegal], onDelete: NoAction, onUpdate: NoAction, map: "fk_id_processo_titulo_tipo_documento")
-
-  
 }
 
 model MineralSituacaoDocumentoLegal {
   IDSituacaoDocumentoLegal String                  @id(map: "key_situacao_documento_legal")
   DSSituacaoDocumentoLegal String?
   MineralProcessoTitulo    MineralProcessoTitulo[]
-
-  
 }
 
 model MineralSubstancia {
   IDSubstancia              String                      @id(map: "key_substancia")
   NMSubstancia              String?
   MineralProcessoSubstancia MineralProcessoSubstancia[]
-
-  
 }
 
 model MineralTipoAssociacao {
   IDTipoAssociacao          String                      @id(map: "key_associacao")
   DSTipoAssociacao          String?
   MineralProcessoAssociacao MineralProcessoAssociacao[]
-
-  
 }
 
 model MineralTipoDocumento {
   IDTipoDocumento             String                        @id(map: "key_documento")
   DSTipoDocumento             String?
   MineralProcessoDocumentacao MineralProcessoDocumentacao[]
-
-  
 }
 
 model MineralTipoDocumentoLegal {
   IDTipoDocumentoLegal  String                  @id(map: "key_tipo_documento_legal")
   DSTipoDocumentoLegal  String?
   MineralProcessoTitulo MineralProcessoTitulo[]
-
-  
 }
 
 model MineralTipoRelacao {
   IDTipoRelacao         String                  @id(map: "key_tipo_relacao")
   DSTipoRelacao         String?
   MineralProcessoPessoa MineralProcessoPessoa[]
-
-  
 }
 
 model MineralTipoRepresentacaoLegal {
   IDTipoRepresentacaoLegal String                  @id(map: "key_tipo_representacao")
   DSTipoRepresentacaoLegal String?
   MineralProcessoPessoa    MineralProcessoPessoa[]
-
-  
 }
 
 model MineralTipoRequerimento {
   IDTipoRequerimento String            @id(map: "key_tipo_requerimento")
   DSTipoRequerimento String?
   MineralProcesso    MineralProcesso[]
-
-  
 }
 
 model MineralTipoResponsabilidadeTecnica {
   IDTipoResponsabilidadeTecnica String                  @id(map: "key_tipo_responsabilidade")
   DSTipoResponsabilidadeTecnica String?
   MineralProcessoPessoa         MineralProcessoPessoa[]
-
-  
 }
 
 model MineralTipoUsoSubstancia {
   IDTipoUsoSubstancia       String                      @id(map: "key_tipo_uso_substancia")
   DSTipoUsoSubstancia       String?
   MineralProcessoSubstancia MineralProcessoSubstancia[]
-
-  
 }
 
 model MineralUnidadeAdministrativaRegional {
   IDUnidadeAdministrativaRegional String            @id(map: "key_unidade_adm_regional")
   DSUnidadeAdministrativaRegional String?
   MineralProcesso                 MineralProcesso[]
-
-  
 }
 
 model MineralUnidadeProtocolizadora {
   IDUnidadeProtocolizadora String            @id(map: "key_unidade_protocolizadora")
   DSUnidadeProtocolizadora String?
   MineralProcesso          MineralProcesso[]
-
-  
 }
 
 enum UserType {

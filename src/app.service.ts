@@ -12,12 +12,77 @@ export class AppService {
     private readonly email: EmailsService
   ) { }
   async getHello(): Promise<any> {
-
-    const aaa = await this.prisma.mineralProcesso.findFirst({
+    
+    const process = await this.prisma.mineralProcesso.findMany({
       where:{
-        
+        DSProcesso: '866.801/2023'
+      },
+      include: {
+        MineralFaseProcesso: true,
+        MineralProcessoSubstancia: {
+          include: {
+            MineralSubstancia: true,
+            MineralTipoUsoSubstancia: true
+          }
+        },
+        MineralProcessoPessoa: {
+          include: {
+            MineralPessoa: true,
+            MineralTipoRelacao: true
+          }
+        },
+        MineralTipoRequerimento: true,
+        MineralProcessoMunicipio: {
+          include: {
+            MineralMunicipio: true
+          }
+        }
+      },
+      orderBy: {
+        NRAnoProcesso: 'desc'
       }
     })
+
+
+    const processesPrisma = this.prisma.paginationExtension()
+    const [processes, pagination] = await processesPrisma.mineralProcesso.paginate({
+      where:{
+        DSProcesso: '866.801/2023'
+      },
+      include: {
+        MineralFaseProcesso: true,
+        MineralProcessoSubstancia: {
+          include: {
+            MineralSubstancia: true,
+            MineralTipoUsoSubstancia: true
+          }
+        },
+        MineralProcessoPessoa: {
+          //where: whereMineralProcessoPessoa,
+          include: {
+            MineralPessoa: true,
+            MineralTipoRelacao: true
+          }
+        },
+        MineralTipoRequerimento: true,
+        MineralProcessoMunicipio: {
+          include: {
+            MineralMunicipio: true
+          }
+        }
+      },
+      orderBy: {
+        NRAnoProcesso: 'desc'
+      }
+    }).withPages({
+      limit: 10,
+      page: 1,
+      includePageCount: true,
+    })
+
+    return{
+      processes
+    }
   }
 
   async handle() {
