@@ -8,6 +8,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id             Int        @id @default(autoincrement())
+  name           String
+  city           String
+  state          String
+  street         String
+  postalCode     Int        @map("postal_code")
+  country        String
+  locationNumber Int        @map("location_number")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  Customer       Customer[]
+  user           User[]
+
+  @@map("companies")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  name         String
+  surname      String
+  email        String         @unique
+  password     String
+  userType     UserType       @default(USER) @map("user_type")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  companyId    Int?           @map("company_id")
+  Company      Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Customer {
+  id           Int            @id @default(autoincrement())
+  name         String
+  surname      String
+  email        String
+  cpf          String
+  cnpj         String
+  companyId    Int?           @map("company_id")
+  type         CusomerType    @default(NATURAL_PERSON) @map("type")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  Company      Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("customers")
+}
+
+enum UserType {
+  SUPER_ADMIN
+  DEVELOPER
+  ADMIN
+  USER
+}
+
+enum CusomerType {
+  NATURAL_PERSON
+  CORPORATE_ENTITY
+}
+
 model CondicaoPropriedadeSolo {
   IDCondicaoPropriedadeSolo String                    @id(map: "key_condicao_solo")
   DSCondicaoPropriedadeSolo String?
