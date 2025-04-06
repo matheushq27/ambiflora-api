@@ -26,34 +26,45 @@ model Company {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  name         String
-  surname      String
-  email        String         @unique
-  password     String
-  userType     UserType       @default(USER) @map("user_type")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  companyId    Int?           @map("company_id")
-  Company      Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  name      String
+  surname   String
+  email     String   @unique
+  password  String
+  userType  UserType @default(USER) @map("user_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  companyId Int?     @map("company_id")
+  Company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("users")
 }
 
 model Customer {
-  id           Int            @id @default(autoincrement())
-  name         String
-  surname      String
-  email        String
-  cpf          String
-  cnpj         String
-  companyId    Int?           @map("company_id")
-  type         CusomerType    @default(NATURAL_PERSON) @map("type")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  Company      Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        Int         @id @default(autoincrement())
+  name      String
+  surname   String
+  email     String
+  cpf       String
+  cnpj      String
+  companyId Int?        @map("company_id")
+  type      CusomerType @default(NATURAL_PERSON) @map("type")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  Company   Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Folders   Folders[]
 
   @@map("customers")
+}
+
+model Folders {
+  id         Int      @id @default(autoincrement())
+  name       String
+  customerId Int?     @map("customer_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  Customer Customer? @relation(fields: [customerId], references: [id])
 }
 
 enum UserType {
