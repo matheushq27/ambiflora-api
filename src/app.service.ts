@@ -13,7 +13,7 @@ export class AppService {
   ) { }
   async getHello(): Promise<any> {
     
-    const process = await this.prisma.mineralProcesso.findMany({
+    /* const process = await this.prisma.processo.findMany({
       where:{
         DSProcesso: '866.801/2023'
       },
@@ -82,11 +82,11 @@ export class AppService {
 
     return{
       processes
-    }
+    } */
   }
 
   async handle() {
-    const cpfCnpj = '81180624149'
+    /* const cpfCnpj = '81180624149'
 
     const { processes } = await this.scrapeService.findAll({ cpfCnpj })
 
@@ -129,6 +129,6 @@ export class AppService {
 
     return {
       processes: findMany
-    }
+    } */
   }
 }

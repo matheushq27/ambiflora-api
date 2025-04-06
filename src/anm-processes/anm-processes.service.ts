@@ -42,13 +42,13 @@ export class AnmProcessesService {
       cpfCnpj = `***${cpfCnpj.slice(3, 9)}**`
     }
 
-    const where: Prisma.MineralProcessoWhereInput = {}
-    const whereMineralProcessoPessoa: Prisma.MineralProcessoPessoaWhereInput | undefined = undefined
+    const where: Prisma.ProcessoWhereInput = {}
+    const whereProcessoPessoa: Prisma.ProcessoPessoaWhereInput | undefined = undefined
 
     if (cpfCnpj) {
-      where.MineralProcessoPessoa = {
+      where.ProcessoPessoa = {
         some: {
-          MineralPessoa: {
+          Pessoa: {
             NRCPFCNPJ: cpfCnpj
           }
         }
@@ -60,9 +60,9 @@ export class AnmProcessesService {
     }
 
     if (name) {
-      where.MineralProcessoPessoa = {
+      where.ProcessoPessoa = {
         some: {
-          MineralPessoa: {
+          Pessoa: {
             NMPessoa: {
               contains: name,
               mode: 'insensitive'
@@ -73,8 +73,8 @@ export class AnmProcessesService {
     }
 
     if (relationship !== '0') {
-      where.MineralProcessoPessoa.some.MineralTipoRelacao.IDTipoRelacao = relationship
-      whereMineralProcessoPessoa.IDTipoRelacao = relationship
+      where.ProcessoPessoa.some.TipoRelacao.IDTipoRelacao = relationship
+      whereProcessoPessoa.IDTipoRelacao = relationship
     }
 
     if (active === 'S' || active === 'N') { 
@@ -82,28 +82,28 @@ export class AnmProcessesService {
     }
 
    const [processes, total] = await this.prisma.$transaction([
-      this.prisma.mineralProcesso.findMany({
+      this.prisma.processo.findMany({
         relationLoadStrategy: 'join',
         where,
         include: {
-          MineralFaseProcesso: true,
-          MineralProcessoSubstancia: {
+          FaseProcesso: true,
+          ProcessoSubstancia: {
             include: {
-              MineralSubstancia: true,
-              MineralTipoUsoSubstancia: true
+              Substancia: true,
+              TipoUsoSubstancia: true
             }
           },
-          MineralProcessoPessoa: {
-            where: whereMineralProcessoPessoa,
+          ProcessoPessoa: {
+            where: whereProcessoPessoa,
             include: {
-              MineralPessoa: true,
-              MineralTipoRelacao: true
+              Pessoa: true,
+              TipoRelacao: true
             }
           },
-          MineralTipoRequerimento: true,
-          MineralProcessoMunicipio: {
+          TipoRequerimento: true,
+          ProcessoMunicipio: {
             include: {
-              MineralMunicipio: true
+              Municipio: true
             }
           }
         },
@@ -113,7 +113,7 @@ export class AnmProcessesService {
         take: takeSkip.take,
         skip: takeSkip.skip
       }),
-      this.prisma.mineralProcesso.count({
+      this.prisma.processo.count({
           where,
       })
     ])
@@ -122,11 +122,11 @@ export class AnmProcessesService {
 
     return {
       data: processes.map((process) => {
-        const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, MineralFaseProcesso, MineralProcessoSubstancia, MineralProcessoPessoa, MineralTipoRequerimento, MineralProcessoMunicipio } = process
+        const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, ProcessoSubstancia, ProcessoPessoa, TipoRequerimento, ProcessoMunicipio } = process
 
-        const relatedPeople = MineralProcessoPessoa.map((data) => {
-          const { DSTipoRelacao, IDTipoRelacao } = data.MineralTipoRelacao
-          const { NRCPFCNPJ, NMPessoa } = data.MineralPessoa
+        const relatedPeople = ProcessoPessoa.map((data) => {
+          const { DSTipoRelacao, IDTipoRelacao } = data.TipoRelacao
+          const { NRCPFCNPJ, NMPessoa } = data.Pessoa
 
           return {
             cpfCnpj: NRCPFCNPJ, name: NMPessoa, DSTipoRelacao, IDTipoRelacao,
@@ -137,28 +137,28 @@ export class AnmProcessesService {
           }
         })
 
-        const substances = MineralProcessoSubstancia.map((substancia) => {
-          const { IDSubstancia, NMSubstancia } = substancia.MineralSubstancia
+        const substances = ProcessoSubstancia.map((substancia) => {
+          const { IDSubstancia, NMSubstancia } = substancia.Substancia
           return {
             id: +IDSubstancia,
             name: NMSubstancia
           }
         })
 
-        const typeOfUse = MineralProcessoSubstancia.map((mineralProcessoSubstancia)=>{
-            const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = mineralProcessoSubstancia.MineralTipoUsoSubstancia
+        const typeOfUse = ProcessoSubstancia.map((ProcessoSubstancia)=>{
+            const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = ProcessoSubstancia.TipoUsoSubstancia
             return{
               id: +IDTipoUsoSubstancia,
               name: DSTipoUsoSubstancia
             }
         })
 
-        const municipalities = MineralProcessoMunicipio.map((mineralProcessoMunicipio)=>{
-          const {IDMunicipio, MineralMunicipio} = mineralProcessoMunicipio
+        const municipalities = ProcessoMunicipio.map((ProcessoMunicipio)=>{
+          const {IDMunicipio, Municipio} = ProcessoMunicipio
           return{
             id: +IDMunicipio,
-            name: MineralMunicipio.NMMunicipio,
-            state: MineralMunicipio.SGUF
+            name: Municipio.NMMunicipio,
+            state: Municipio.SGUF
           }
         })
         
@@ -172,12 +172,12 @@ export class AnmProcessesService {
           typeOfUse,
           municipalities,
           requirement: {
-            id: +MineralTipoRequerimento.IDTipoRequerimento,
-            title: MineralTipoRequerimento.DSTipoRequerimento,
+            id: +TipoRequerimento.IDTipoRequerimento,
+            title: TipoRequerimento.DSTipoRequerimento,
           },
           phase: {
-            id: +MineralFaseProcesso.IDFaseProcesso,
-            title: MineralFaseProcesso.DSFaseProcesso
+            id: +FaseProcesso.IDFaseProcesso,
+            title: FaseProcesso.DSFaseProcesso
           }
         }
       }),
@@ -186,30 +186,30 @@ export class AnmProcessesService {
   }
 
   async findByProcessNumber(processNumber: string){
-      const process = await this.prisma.mineralProcesso.findFirst({
+      const process = await this.prisma.processo.findFirst({
         relationLoadStrategy: 'join',
         where:{
           DSProcesso: processNumber
         },
         include: {
-          MineralFaseProcesso: true,
-          MineralProcessoSubstancia: {
+          FaseProcesso: true,
+          ProcessoSubstancia: {
             include: {
-              MineralSubstancia: true,
-              MineralTipoUsoSubstancia: true
+              Substancia: true,
+              TipoUsoSubstancia: true
             }
           },
-          MineralProcessoPessoa: {
-            //where: whereMineralProcessoPessoa,
+          ProcessoPessoa: {
+            //where: whereProcessoPessoa,
             include: {
-              MineralPessoa: true,
-              MineralTipoRelacao: true
+              Pessoa: true,
+              TipoRelacao: true
             }
           },
-          MineralTipoRequerimento: true,
-          MineralProcessoMunicipio: {
+          TipoRequerimento: true,
+          ProcessoMunicipio: {
             include: {
-              MineralMunicipio: true
+              Municipio: true
             }
           }
         }
@@ -221,7 +221,7 @@ export class AnmProcessesService {
   }
 
   async findOptionsRelationship() {
-    const relationship = await this.prisma.mineralTipoRelacao.findMany({
+    const relationship = await this.prisma.tipoRelacao.findMany({
       orderBy: {
         DSTipoRelacao: 'asc'
       }
@@ -239,7 +239,7 @@ export class AnmProcessesService {
   async findHoldersByName(name: string) {
 
     const processesPrisma = this.prisma.paginationExtension()
-    const [holders] = await processesPrisma.mineralPessoa.paginate({
+    const [holders] = await processesPrisma.pessoa.paginate({
       where: {
         NMPessoa: {
           contains: name,
@@ -259,11 +259,11 @@ export class AnmProcessesService {
   }
 
   mapResults(process: any){
-    const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, MineralFaseProcesso, MineralProcessoSubstancia, MineralProcessoPessoa, MineralTipoRequerimento, MineralProcessoMunicipio } = process
+    const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, ProcessoSubstancia, ProcessoPessoa, TipoRequerimento, ProcessoMunicipio } = process
 
-    const relatedPeople = MineralProcessoPessoa.map((data) => {
-      const { DSTipoRelacao, IDTipoRelacao } = data.MineralTipoRelacao
-      const { NRCPFCNPJ, NMPessoa } = data.MineralPessoa
+    const relatedPeople = ProcessoPessoa.map((data) => {
+      const { DSTipoRelacao, IDTipoRelacao } = data.TipoRelacao
+      const { NRCPFCNPJ, NMPessoa } = data.Pessoa
 
       return {
         cpfCnpj: NRCPFCNPJ, name: NMPessoa, DSTipoRelacao, IDTipoRelacao,
@@ -274,28 +274,28 @@ export class AnmProcessesService {
       }
     })
 
-    const substances = MineralProcessoSubstancia.map((substancia) => {
-      const { IDSubstancia, NMSubstancia } = substancia.MineralSubstancia
+    const substances = ProcessoSubstancia.map((substancia) => {
+      const { IDSubstancia, NMSubstancia } = substancia.Substancia
       return {
         id: +IDSubstancia,
         name: NMSubstancia
       }
     })
 
-    const typeOfUse = MineralProcessoSubstancia.map((mineralProcessoSubstancia)=>{
-        const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = mineralProcessoSubstancia.MineralTipoUsoSubstancia
+    const typeOfUse = ProcessoSubstancia.map((ProcessoSubstancia)=>{
+        const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = ProcessoSubstancia.TipoUsoSubstancia
         return{
           id: +IDTipoUsoSubstancia,
           name: DSTipoUsoSubstancia
         }
     })
 
-    const municipalities = MineralProcessoMunicipio.map((mineralProcessoMunicipio)=>{
-      const {IDMunicipio, MineralMunicipio} = mineralProcessoMunicipio
+    const municipalities = ProcessoMunicipio.map((ProcessoMunicipio)=>{
+      const {IDMunicipio, Municipio} = ProcessoMunicipio
       return{
         id: +IDMunicipio,
-        name: MineralMunicipio.NMMunicipio,
-        state: MineralMunicipio.SGUF
+        name: Municipio.NMMunicipio,
+        state: Municipio.SGUF
       }
     })
     
@@ -309,12 +309,12 @@ export class AnmProcessesService {
       typeOfUse,
       municipalities,
       requirement: {
-        id: +MineralTipoRequerimento.IDTipoRequerimento,
-        title: MineralTipoRequerimento.DSTipoRequerimento,
+        id: +TipoRequerimento.IDTipoRequerimento,
+        title: TipoRequerimento.DSTipoRequerimento,
       },
       phase: {
-        id: +MineralFaseProcesso.IDFaseProcesso,
-        title: MineralFaseProcesso.DSFaseProcesso
+        id: +FaseProcesso.IDFaseProcesso,
+        title: FaseProcesso.DSFaseProcesso
       }
     }
   }
