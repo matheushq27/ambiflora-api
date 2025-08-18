@@ -14,6 +14,7 @@ import { AuthenticateModule } from './authenticate/authenticate.module';
 import { EmailsModule } from './emails/emails.module';
 import { CustomersModule } from './customers/customers.module';
 import { AnmProcessesModule } from './anm-processes/anm-processes.module';
+import { FoldersModule } from './folders/folders.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { AnmProcessesModule } from './anm-processes/anm-processes.module';
     ScrapeProcessesModule,
     EmailsModule,
     CustomersModule,
-    AnmProcessesModule
+    AnmProcessesModule,
+    FoldersModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

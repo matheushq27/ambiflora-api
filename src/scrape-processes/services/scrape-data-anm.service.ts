@@ -50,7 +50,7 @@ export class ScrapeDataAnmService {
 
         const start = Date.now();
         const url = `${this.urlBase}/dadosabertos/SCM/microdados/microdados-scm.zip`;
-        console.log('Iniciando o download');
+        console.log('Iniciando o download')
 
         const httpsAgent = new https.Agent({
             rejectUnauthorized: false,

@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ScrapeService } from 'src/scrape-processes/services/scrape.service';
 import { cpf as cpfValidator, cnpj as cnpjValidator } from 'cpf-cnpj-validator';
 import { Prisma } from '@prisma/client';
 import { Pagination } from 'prisma/helpers/pagination';
@@ -11,6 +10,9 @@ interface ConsultParams {
   relationship: string
   name: string
   processNumber: string
+  onlyProcessNumbers?: boolean
+  monitored: boolean
+  folderUUID: string
 }
 
 export interface Person {
@@ -26,10 +28,9 @@ export interface Person {
 export class AnmProcessesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly scrapeService: ScrapeService,
     protected pagination: Pagination,
   ) { }
-  async consult({ cpfCnpj, active, relationship, name, processNumber }: ConsultParams, paginate = { page: 1, perPage: 10 }) {
+  async consult({ cpfCnpj, active, relationship, name, processNumber, onlyProcessNumbers, monitored, folderUUID }: ConsultParams, paginate = { page: 1, perPage: 10 }, userId: number) {
 
     const { page, perPage } = paginate
 
@@ -77,35 +78,77 @@ export class AnmProcessesService {
       whereProcessoPessoa.IDTipoRelacao = relationship
     }
 
-    if (active === 'S' || active === 'N') { 
+    if (active === 'S' || active === 'N') {
       where.BTAtivo = active
     }
 
-   const [processes, total] = await this.prisma.$transaction([
+    const monitoredIsBoolean = typeof monitored === 'boolean'
+    const searchForMonitoredProcesses = onlyProcessNumbers || monitoredIsBoolean
+    let monitoredProcesses: {
+      processNumber: string;
+    }[] = []
+
+    if (searchForMonitoredProcesses) {
+      monitoredProcesses = await this.prisma.monitoredProcesses.findMany({
+        where: {
+          Folders: {
+            userId,
+            uuid: folderUUID ? folderUUID : {}
+          }
+        },
+        select: {
+          processNumber: true
+        }
+      })
+    }
+
+    if (monitoredIsBoolean) {
+      if (monitored) {
+        where.DSProcesso = {
+          in: monitoredProcesses.map((m) => {
+            return m.processNumber
+          })
+        }
+      } else {
+        where.DSProcesso = {
+          notIn: monitoredProcesses.map((m) => {
+            return m.processNumber
+          })
+        }
+      }
+    }
+
+    if (onlyProcessNumbers) {
+
+      where.DSProcesso = {
+        notIn: monitoredProcesses.map((m) => {
+          return m.processNumber
+        })
+      }
+
+      const processes = await this.prisma.processo.findMany({
+        relationLoadStrategy: 'join',
+        where,
+        select: {
+          DSProcesso: true
+        }
+      })
+
+      return processes.map((p) => {
+        return p.DSProcesso
+      })
+    }
+
+    console.log(JSON.stringify(where))
+
+
+    const [processes, total] = await this.prisma.$transaction([
       this.prisma.processo.findMany({
         relationLoadStrategy: 'join',
         where,
         include: {
           FaseProcesso: true,
-          ProcessoSubstancia: {
-            include: {
-              Substancia: true,
-              TipoUsoSubstancia: true
-            }
-          },
-          ProcessoPessoa: {
-            where: whereProcessoPessoa,
-            include: {
-              Pessoa: true,
-              TipoRelacao: true
-            }
-          },
           TipoRequerimento: true,
-          ProcessoMunicipio: {
-            include: {
-              Municipio: true
-            }
-          }
         },
         orderBy: {
           NRAnoProcesso: 'desc'
@@ -114,17 +157,86 @@ export class AnmProcessesService {
         skip: takeSkip.skip
       }),
       this.prisma.processo.count({
-          where,
+        where,
       })
     ])
 
-    const pagination = this.pagination.paginate({ total, page })
+    console.log(onlyProcessNumbers)
 
+    const processNumberId = processes.map((p) => {
+      return p.DSProcesso
+    })
+
+
+    const _monitored = await this.prisma.monitoredProcesses.findMany({
+      where: {
+        processNumber: {
+          in: processNumberId
+        },
+        Folders: {
+          userId
+        }
+      }
+    })
+
+    const processoSubstancia = await this.prisma.processoSubstancia.findMany({
+      where: {
+        DSProcesso: {
+          in: processNumberId
+        },
+      },
+      include: {
+        Substancia: true,
+        TipoUsoSubstancia: true
+      },
+      //distinct: 'IDTipoUsoSubstancia'
+    })
+
+    const processoPessoa = await this.prisma.processoPessoa.findMany({
+      where: {
+        DSProcesso: {
+          in: processNumberId
+        },
+      },
+      include: {
+        Pessoa: true,
+        TipoRelacao: true
+      }
+    })
+
+    const processoMunicipio = await this.prisma.processoMunicipio.findMany({
+      where: {
+        DSProcesso: {
+          in: processNumberId
+        }
+      },
+      include: {
+        Municipio: true
+      }
+    })
+
+    const processoEvento = await this.prisma.processoEvento.findMany({
+      where: {
+        DSProcesso: {
+          in: processNumberId
+        }
+      },
+      include: {
+        Evento: true,
+      },
+      orderBy: {
+        DTEvento: 'desc'
+      }
+    })
+
+
+    const pagination = this.pagination.paginate({ total, page })
+    console.log(processoSubstancia)
     return {
       data: processes.map((process) => {
-        const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, ProcessoSubstancia, ProcessoPessoa, TipoRequerimento, ProcessoMunicipio } = process
+        const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, TipoRequerimento } = process
 
-        const relatedPeople = ProcessoPessoa.map((data) => {
+        const relatedPeople = processoPessoa.filter(p => p.DSProcesso === DSProcesso).map((data) => {
           const { DSTipoRelacao, IDTipoRelacao } = data.TipoRelacao
           const { NRCPFCNPJ, NMPessoa } = data.Pessoa
 
@@ -137,7 +249,8 @@ export class AnmProcessesService {
           }
         })
 
-        const substances = ProcessoSubstancia.map((substancia) => {
+        const processoSubstanciaFilter = processoSubstancia.filter(p => p.DSProcesso === DSProcesso)
+        const substances = processoSubstanciaFilter.map((substancia) => {
           const { IDSubstancia, NMSubstancia } = substancia.Substancia
           return {
             id: +IDSubstancia,
@@ -145,23 +258,38 @@ export class AnmProcessesService {
           }
         })
 
-        const typeOfUse = ProcessoSubstancia.map((ProcessoSubstancia)=>{
-            const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = ProcessoSubstancia.TipoUsoSubstancia
-            return{
-              id: +IDTipoUsoSubstancia,
-              name: DSTipoUsoSubstancia
-            }
+        const typeOfUse = processoSubstanciaFilter.map((ProcessoSubstancia) => {
+          const { DSTipoUsoSubstancia, IDTipoUsoSubstancia } = ProcessoSubstancia.TipoUsoSubstancia
+          return {
+            id: +IDTipoUsoSubstancia,
+            name: DSTipoUsoSubstancia
+          }
         })
 
-        const municipalities = ProcessoMunicipio.map((ProcessoMunicipio)=>{
-          const {IDMunicipio, Municipio} = ProcessoMunicipio
-          return{
+
+        const municipalities = processoMunicipio.filter(p => p.DSProcesso === DSProcesso).map((ProcessoMunicipio) => {
+          const { IDMunicipio, Municipio } = ProcessoMunicipio
+          return {
             id: +IDMunicipio,
             name: Municipio.NMMunicipio,
             state: Municipio.SGUF
           }
         })
-        
+
+        const events = processoEvento.filter(p => p.DSProcesso === DSProcesso).map((processoEvento) => {
+          const { DSEvento, IDEvento } = processoEvento.Evento
+          return {
+            name: DSEvento,
+            date: processoEvento.DTEvento,
+            eventId: +IDEvento,
+            description: `${IDEvento} - ${DSEvento}`
+          }
+        })
+
+        const monitoredProcesses = _monitored.filter(p => p.processNumber === DSProcesso)
+
+        const currentEvent = events.length > 0 ? events[0] : null
+
         return {
           process: DSProcesso,
           processNumber: NRProcesso,
@@ -172,52 +300,55 @@ export class AnmProcessesService {
           typeOfUse,
           municipalities,
           requirement: {
-            id: +TipoRequerimento.IDTipoRequerimento,
-            title: TipoRequerimento.DSTipoRequerimento,
+            id: TipoRequerimento ? +TipoRequerimento.IDTipoRequerimento : 0,
+            title: TipoRequerimento ? TipoRequerimento.DSTipoRequerimento : '',
           },
           phase: {
-            id: +FaseProcesso.IDFaseProcesso,
-            title: FaseProcesso.DSFaseProcesso
-          }
+            id: FaseProcesso ? +FaseProcesso.IDFaseProcesso : 0,
+            title: FaseProcesso ? FaseProcesso.DSFaseProcesso : ''
+          },
+          events,
+          currentEvent,
+          monitored: monitoredProcesses.length > 0
         }
       }),
       ...pagination
-    } 
+    }
   }
 
-  async findByProcessNumber(processNumber: string){
-      const process = await this.prisma.processo.findFirst({
-        relationLoadStrategy: 'join',
-        where:{
-          DSProcesso: processNumber
+  async findByProcessNumber(processNumber: string) {
+    const process = await this.prisma.processo.findFirst({
+      relationLoadStrategy: 'join',
+      where: {
+        DSProcesso: processNumber
+      },
+      include: {
+        FaseProcesso: true,
+        ProcessoSubstancia: {
+          include: {
+            Substancia: true,
+            TipoUsoSubstancia: true
+          }
         },
-        include: {
-          FaseProcesso: true,
-          ProcessoSubstancia: {
-            include: {
-              Substancia: true,
-              TipoUsoSubstancia: true
-            }
-          },
-          ProcessoPessoa: {
-            //where: whereProcessoPessoa,
-            include: {
-              Pessoa: true,
-              TipoRelacao: true
-            }
-          },
-          TipoRequerimento: true,
-          ProcessoMunicipio: {
-            include: {
-              Municipio: true
-            }
+        ProcessoPessoa: {
+          //where: whereProcessoPessoa,
+          include: {
+            Pessoa: true,
+            TipoRelacao: true
+          }
+        },
+        TipoRequerimento: true,
+        ProcessoMunicipio: {
+          include: {
+            Municipio: true
           }
         }
-      })
-
-      return{
-        process: this.mapResults(process)
       }
+    })
+
+    return {
+      process: this.mapResults(process)
+    }
   }
 
   async findOptionsRelationship() {
@@ -258,7 +389,7 @@ export class AnmProcessesService {
 
   }
 
-  mapResults(process: any){
+  mapResults(process: any) {
     const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, ProcessoSubstancia, ProcessoPessoa, TipoRequerimento, ProcessoMunicipio } = process
 
     const relatedPeople = ProcessoPessoa.map((data) => {
@@ -282,23 +413,23 @@ export class AnmProcessesService {
       }
     })
 
-    const typeOfUse = ProcessoSubstancia.map((ProcessoSubstancia)=>{
-        const {DSTipoUsoSubstancia, IDTipoUsoSubstancia} = ProcessoSubstancia.TipoUsoSubstancia
-        return{
-          id: +IDTipoUsoSubstancia,
-          name: DSTipoUsoSubstancia
-        }
+    const typeOfUse = ProcessoSubstancia.map((ProcessoSubstancia) => {
+      const { DSTipoUsoSubstancia, IDTipoUsoSubstancia } = ProcessoSubstancia.TipoUsoSubstancia
+      return {
+        id: +IDTipoUsoSubstancia,
+        name: DSTipoUsoSubstancia
+      }
     })
 
-    const municipalities = ProcessoMunicipio.map((ProcessoMunicipio)=>{
-      const {IDMunicipio, Municipio} = ProcessoMunicipio
-      return{
+    const municipalities = ProcessoMunicipio.map((ProcessoMunicipio) => {
+      const { IDMunicipio, Municipio } = ProcessoMunicipio
+      return {
         id: +IDMunicipio,
         name: Municipio.NMMunicipio,
         state: Municipio.SGUF
       }
     })
-    
+
     return {
       process: DSProcesso,
       processNumber: NRProcesso,
@@ -318,4 +449,102 @@ export class AnmProcessesService {
       }
     }
   }
+
+  async notMonitorProject({ processNumber, userId }: { processNumber: string, userId: number }) {
+    const monitored = await this.prisma.monitoredProcesses.findFirst({
+      where: {
+        processNumber,
+        Folders: {
+          userId
+        }
+      }
+    })
+
+    if (!monitored) {
+      throw new NotFoundException('Projeto não encontrado')
+    }
+
+    await this.prisma.monitoredProcesses.delete({
+      where: {
+        id: monitored.id
+      }
+    })
+  }
+
+  async monitorProject({ processNumber, folderId }: { processNumber: string, folderId: string }) {
+    const exist = await this.prisma.processo.findFirst({
+      where: {
+        DSProcesso: processNumber
+      },
+    })
+
+    if (!exist) {
+      throw new NotFoundException('Projeto não encontrado')
+    }
+
+
+    const processoEvento = await this.prisma.processoEvento.findMany({
+      where: {
+        DSProcesso: processNumber
+      },
+      include: {
+        Evento: true,
+      },
+      orderBy: {
+        DTEvento: 'desc'
+      }
+    })
+
+    let lastEventId = 0
+
+    if (processoEvento.length > 0) {
+      lastEventId = +processoEvento[0].IDEvento
+    }
+
+    await this.prisma.monitoredProcesses.create({
+      data: {
+        folderUUid: folderId,
+        lastEventId,
+        processNumber,
+      }
+    })
+  }
+
+  async monitorMultipleProject({ processNumbers, folderId, userId }: { processNumbers: string[], folderId: string, userId: number }) {
+
+    const processoEventos = await this.prisma.processoEvento.findMany({
+      where: {
+        DSProcesso: {
+          in: processNumbers
+        }
+      },
+      include: {
+        Evento: true,
+      },
+      orderBy: {
+        DTEvento: 'desc'
+      }
+    })
+
+    const data = processNumbers.map((processNumber) => {
+      const filter = processoEventos.filter(pe => pe.DSProcesso === processNumber)
+
+      const latest = filter.reduce((latest, currentEvent) => {
+        return new Date(currentEvent.DTEvento) > new Date(latest.DTEvento)
+          ? currentEvent
+          : latest;
+      });
+      return {
+        folderUUid: folderId,
+        processNumber,
+        lastEventId: +latest.IDEvento
+      }
+    })
+
+    await this.prisma.monitoredProcesses.createMany({
+      data
+    })
+
+  }
+
 }

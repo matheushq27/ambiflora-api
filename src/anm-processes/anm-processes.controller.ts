@@ -6,6 +6,7 @@ import { UserPayload } from 'src/auth/jwt.strategy';
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { cpf as cpfValidator, cnpj as cnpjValidator } from 'cpf-cnpj-validator';
 import { AnmProcessesService } from './anm-processes.service';
+import { CreateMonitorBodySchema, createMonitorBodySchema, CreateMonitorDto, MonitorMultipleBodySchema, monitorMultipleBodySchema, MonitorMultipleDto, NotMonitorBodySchema, notMonitorBodySchema, NotMonitorDto } from './dto/create-anm-processes';
 
 
 @ApiTags('anmProcesses')
@@ -25,18 +26,21 @@ export class AnmProcessesController {
         @Query('processNumber') processNumber: string,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
+        @Query('onlyProcessNumbers', new DefaultValuePipe(false), ParseBoolPipe) onlyProcessNumbers: boolean,
+        @Query('monitored', new DefaultValuePipe(null), new ParseBoolPipe({ optional: true })) monitored: boolean,
+        @Query('folderUUID') folderUUID: string,
     ) {
-        return await this.anmProcessesService.consult({ cpfCnpj, active, relationship, name, processNumber }, {
+        return await this.anmProcessesService.consult({ cpfCnpj, active, relationship, name, processNumber, onlyProcessNumbers, monitored, folderUUID }, {
             page,
             perPage
-        })
+        }, userPayload.user.id)
     }
 
     @Get('/:processNumber')
     async findByProcessNumber(
         @Param('processNumber') processNumber: string,
         @Query('year') year: string
-    ){
+    ) {
         const p = processNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         return await this.anmProcessesService.findByProcessNumber(`${p}/${year}`)
     }
@@ -47,7 +51,7 @@ export class AnmProcessesController {
     }
 
     @Get('/search/name/:name')
-    async findHoldersByName( @Param('name') name: string,) {
+    async findHoldersByName(@Param('name') name: string,) {
         return await this.anmProcessesService.findHoldersByName(name)
     }
 
@@ -55,6 +59,38 @@ export class AnmProcessesController {
     findOne(@Param('id', ParseIntPipe) id: number) {
 
     }
+
+    @Post('/monitor')
+    @HttpCode(200)
+    @UsePipes(new ZodValidationPipe(createMonitorBodySchema))
+    @ApiBody({ type: CreateMonitorDto })
+    async monitorProject(@Body() body: CreateMonitorBodySchema) {
+        return await this.anmProcessesService.monitorProject(body)
+    }
+
+    @Post('/monitor-multiple')
+    @HttpCode(200)
+    @UsePipes(new ZodValidationPipe(monitorMultipleBodySchema))
+    @ApiBody({ type: MonitorMultipleDto })
+    async monitorAllProjects(@CurrentUser() userPayload: UserPayload, @Body() body: MonitorMultipleBodySchema) {
+        return await this.anmProcessesService.monitorMultipleProject({
+            userId: userPayload.user.id,
+            folderId: body.folderId,
+            processNumbers: body.processNumbers
+        })
+    }
+
+    @Post('/not-monitor')
+    @HttpCode(200)
+    @UsePipes(new ZodValidationPipe(notMonitorBodySchema))
+    @ApiBody({ type: NotMonitorDto })
+    async notMonitorProject(@CurrentUser() userPayload: UserPayload, @Body() body: NotMonitorBodySchema) {
+        return await this.anmProcessesService.notMonitorProject({
+            processNumber: body.processNumber,
+            userId: userPayload.user.id
+        })
+    }
+
 
     @Delete(':id')
     async remove(@Param('id', ParseIntPipe) id: number) {
