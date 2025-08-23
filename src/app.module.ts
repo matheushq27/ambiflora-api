@@ -17,12 +17,17 @@ import { AnmProcessesModule } from './anm-processes/anm-processes.module';
 import { FoldersModule } from './folders/folders.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { BullModule } from '@nestjs/bull';
+import { EmailQueueModule } from './email-queue/email-queue.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
+    }),
+    BullModule.forRoot({
+      redis: process.env.REDIS_URL,
     }),
     ScheduleModule.forRoot(),
     AuthModule,
@@ -35,7 +40,8 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     CustomersModule,
     AnmProcessesModule,
     FoldersModule,
-    SchedulerModule
+    SchedulerModule,
+    EmailQueueModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

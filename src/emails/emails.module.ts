@@ -3,6 +3,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { EmailsService } from './emails.service';
 import * as path from 'path';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -28,6 +29,9 @@ import * as path from 'path';
           strict: true,
         },
       },
+    }),
+    BullModule.registerQueue({
+      name: 'email',
     }),
   ],
   providers: [EmailsService],
