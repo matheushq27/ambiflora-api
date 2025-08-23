@@ -258,11 +258,20 @@ export class AnmProcessesService {
           }
         })
 
-        const typeOfUse = processoSubstanciaFilter.map((ProcessoSubstancia) => {
+        const typeOfUse: { id: number, name: string }[] = []
+
+        processoSubstanciaFilter.map((ProcessoSubstancia) => {
           const { DSTipoUsoSubstancia, IDTipoUsoSubstancia } = ProcessoSubstancia.TipoUsoSubstancia
-          return {
-            id: +IDTipoUsoSubstancia,
-            name: DSTipoUsoSubstancia
+          const id = +IDTipoUsoSubstancia
+          const typeOfUseIds = typeOfUse.map((t) => {
+            return t.id
+          })
+
+          if (!typeOfUseIds.includes(id)) {
+            typeOfUse.push({
+              id,
+              name: DSTipoUsoSubstancia
+            })
           }
         })
 
