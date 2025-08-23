@@ -15,6 +15,8 @@ import { EmailsModule } from './emails/emails.module';
 import { CustomersModule } from './customers/customers.module';
 import { AnmProcessesModule } from './anm-processes/anm-processes.module';
 import { FoldersModule } from './folders/folders.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { FoldersModule } from './folders/folders.module';
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     CompaniesModule,
@@ -31,7 +34,8 @@ import { FoldersModule } from './folders/folders.module';
     EmailsModule,
     CustomersModule,
     AnmProcessesModule,
-    FoldersModule
+    FoldersModule,
+    SchedulerModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
