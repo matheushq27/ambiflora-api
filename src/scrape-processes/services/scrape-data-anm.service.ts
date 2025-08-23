@@ -35,11 +35,100 @@ export class ScrapeDataAnmService {
         await this.downloadZipFile()
         await this.extractZip()
         await this.sendTxtToDatabaseWithCopy()
-        await this.updateTables()
+        
+        // Executa updateTables em um processo separado
+        this.updateTablesAsync();
+        
         await this.deleteFiles()
 
         const { time } = this.calculateTime(start)
         console.log(`⏱️ Tempo total de execução: ${time}`);
+        
+        return { success: true, message: 'Importação concluída com sucesso. Atualizações de tabelas em andamento.' };
+    }
+
+    async updateTablesAsync() {
+        // Esta função será executada em segundo plano
+        try {
+            await this.updateTables();
+            console.log('✅ Processo de atualização de tabelas concluído em segundo plano.');
+        } catch (error) {
+            console.error('❌ Erro no processo de atualização em segundo plano:', error);
+        }
+    }
+
+    async updateTables() {
+        const start = Date.now();
+        const sqlFilePath = path.join(this.rootDir, 'src', 'update-tables.sql');
+        const sqlCommands = fs.readFileSync(sqlFilePath, 'utf-8');
+
+        console.log('📄 Executando alterações no banco');
+
+        const statements = sqlCommands
+            .split(';')
+            .map(cmd => cmd.trim())
+            .filter(cmd => cmd.length > 0);
+
+        // Cria uma conexão separada para não bloquear a conexão principal do Prisma
+        const client = new Client({
+            connectionString: this.connectionString
+        });
+        
+        await client.connect();
+        
+        try {
+            // Configura um nível de isolamento que não bloqueie leituras
+            await client.query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+            
+            for (const statement of statements) {
+                console.log('🔹 Executando:', statement.slice(0, 100) + '...');
+                
+                // Verifica se o comando é para adicionar uma chave primária
+                if (statement.includes('ADD CONSTRAINT') && statement.includes('PRIMARY KEY')) {
+                    const tableMatch = statement.match(/ALTER TABLE "([^"]+)"/i);
+                    const tableName = tableMatch ? tableMatch[1] : null;
+                    const constraintName = statement.match(/ADD CONSTRAINT ([^ ]+) PRIMARY KEY/)?.[1];
+                    
+                    if (tableName && constraintName) {
+                        // Verifica se a tabela já tem uma chave primária
+                        const checkResult = await client.query(
+                            `SELECT count(*) FROM information_schema.table_constraints 
+                             WHERE table_name = $1 AND constraint_type = 'PRIMARY KEY'`,
+                            [tableName]
+                        );
+                        
+                        // Se já existir uma chave primária, pula este comando
+                        if (Number(checkResult.rows[0].count) > 0) {
+                            console.log(`⚠️ Tabela "${tableName}" já possui uma chave primária. Pulando comando.`);
+                            continue;
+                        }
+                    }
+                }
+                
+                try {
+                    // Executa cada comando em uma transação separada
+                    await client.query('BEGIN');
+                    await client.query(statement);
+                    await client.query('COMMIT');
+                    
+                    console.log(`  ✓ Comando executado com sucesso.`);
+                    
+                    // Pequena pausa para permitir que outras operações acessem o banco
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (err) {
+                    await client.query('ROLLBACK');
+                    console.error(`❌ Erro ao executar comando:`, err);
+                    // Continua com o próximo comando
+                }
+            }
+        } catch (err) {
+            console.error('❌ Erro geral ao executar o script SQL:', err);
+        } finally {
+            await client.end();
+        }
+
+        const { time } = this.calculateTime(start)
+        console.log(`⏱️ Tempo total de execução do SQL: ${time}`);
     }
 
     async downloadZipFile(): Promise<void> {
@@ -236,57 +325,6 @@ export class ScrapeDataAnmService {
 
         console.log(`✅✅✅ TABELAS IMPORTADAS COM SUCESSO ✅✅✅`);
         console.log(`⏱️ Tempo total de importação: ${time}`);
-    }
-
-    async updateTables() {
-        const start = Date.now();
-        const sqlFilePath = path.join(this.rootDir, 'src', 'update-tables.sql');
-        const sqlCommands = fs.readFileSync(sqlFilePath, 'utf-8');
-
-        console.log('📄 Executando alterações no banco');
-
-        const statements = sqlCommands
-            .split(';')
-            .map(cmd => cmd.trim())
-            .filter(cmd => cmd.length > 0);
-
-        try {
-            for (const statement of statements) {
-                console.log('🔹 Executando:', statement.slice(0, 100) + '...');
-                
-                // Verifica se o comando é para adicionar uma chave primária
-                if (statement.includes('ADD CONSTRAINT') && statement.includes('PRIMARY KEY')) {
-                    const tableName = statement.match(/ALTER TABLE "([^"]+)"/)?.[1];
-                    const constraintName = statement.match(/ADD CONSTRAINT ([^ ]+) PRIMARY KEY/)?.[1];
-                    
-                    if (tableName && constraintName) {
-                        // Verifica se a tabela já tem uma chave primária
-                        const checkPrimaryKey = await this.prisma.$queryRaw`
-                            SELECT count(*) 
-                            FROM information_schema.table_constraints 
-                            WHERE table_name = ${tableName} 
-                            AND constraint_type = 'PRIMARY KEY'
-                        `;
-                        
-                        // Se já existir uma chave primária, pula este comando
-                        if (Number(checkPrimaryKey[0].count) > 0) {
-                            console.log(`⚠️ Tabela "${tableName}" já possui uma chave primária. Pulando comando.`);
-                            continue;
-                        }
-                    }
-                }
-                
-                await this.prisma.$executeRawUnsafe(statement);
-            }
-            
-            console.log('✅ Todos os comandos SQL executados com sucesso!');
-        } catch (err) {
-            console.error('❌ Erro ao executar o script SQL:', err);
-            // Não lançamos o erro aqui para permitir que o processo continue
-        }
-
-        const { time } = this.calculateTime(start)
-        console.log(`⏱️ Tempo total de execução do SQL: ${time}`);
     }
 
     calculateTime(start: number) {
