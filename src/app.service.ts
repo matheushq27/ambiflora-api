@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ScrapeService } from './scrape-processes/services/scrape.service';
+import { ScrapeService } from './infrastructure/services/scrape-processes/services/scrape.service';
 import { Prisma, $Enums, User } from '@prisma/client';
-import { PrismaService } from './prisma/prisma.service';
-import { EmailsService } from './emails/emails.service';
+import { PrismaService } from './infrastructure/database/prisma/prisma.service';
+import { EmailsService } from './infrastructure/notifications/emails/emails.service';
 
 @Injectable()
 export class AppService {
