@@ -17,7 +17,7 @@ import { ConfigService } from "@nestjs/config";
 @Injectable()
 export class ScrapeDataAnmService {
 
-    private urlBase = 'https://app.anm.gov.br'
+    private urlBase = 'https://dadosabertos.anm.gov.br'
     private rootDir = process.cwd()
     private fileName = 'data-anm.zip'
 
@@ -138,7 +138,7 @@ export class ScrapeDataAnmService {
         }
 
         const start = Date.now();
-        const url = `${this.urlBase}/dadosabertos/SCM/microdados/microdados-scm.zip`;
+        const url = `${this.urlBase}/SCM/microdados/microdados-scm.zip`;
         console.log('Iniciando o download')
 
         const httpsAgent = new https.Agent({
