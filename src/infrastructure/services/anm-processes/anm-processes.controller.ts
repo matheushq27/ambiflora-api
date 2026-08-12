@@ -5,6 +5,7 @@ import { CurrentUser } from '@/infrastructure/auth/auth/current-user-decorator';
 import { UserPayload } from '@/infrastructure/auth/auth/jwt.strategy';
 import { ZodValidationPipe } from '@/common/pipes/zod-validation-pipe';
 import { cpf as cpfValidator, cnpj as cnpjValidator } from 'cpf-cnpj-validator';
+import { ScrapeDataAnmService } from '@/infrastructure/services/scrape-processes/services/scrape-data-anm.service';
 import { AnmProcessesService } from './anm-processes.service';
 import { CreateMonitorBodySchema, createMonitorBodySchema, CreateMonitorDto, MonitorMultipleBodySchema, monitorMultipleBodySchema, MonitorMultipleDto, NotMonitorBodySchema, notMonitorBodySchema, NotMonitorDto } from './dto/create-anm-processes';
 
@@ -14,7 +15,18 @@ import { CreateMonitorBodySchema, createMonitorBodySchema, CreateMonitorDto, Mon
 @Controller('anm-processes')
 @UseGuards(JwtAuthGuard)
 export class AnmProcessesController {
-    constructor(private anmProcessesService: AnmProcessesService) { }
+    constructor(
+        private anmProcessesService: AnmProcessesService,
+        private scrapeDataAnmService: ScrapeDataAnmService
+    ) { }
+
+    @Post('/sync-data')
+    @HttpCode(202)
+    async syncAnmData() {
+        // Não utilizamos await para que a requisição não sofra timeout (leva minutos)
+        this.scrapeDataAnmService.handle().catch(console.error);
+        return { message: "Sincronização da ANM iniciada em background. Acompanhe os logs." };
+    }
 
     @Get()
     async consult(
