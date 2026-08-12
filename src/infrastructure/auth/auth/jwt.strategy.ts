@@ -6,6 +6,8 @@ import { z } from "zod";
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ZodError } from 'zod'
 import { fromZodError } from "zod-validation-error";
+import { ClsService } from 'nestjs-cls';
+import type { AppClsStore } from '@/application/services/user-cache.service';
 
 const tokenPayloadSchema = z.object({
     user: z.object({
@@ -22,7 +24,10 @@ export type UserPayload = z.infer<typeof tokenPayloadSchema>
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(config: ConfigService<Env, true>) {
+    constructor(
+        config: ConfigService<Env, true>,
+        private readonly cls: ClsService<AppClsStore>,
+    ) {
         const publicKey = config.get('JWT_PUBLIC_KEY', { infer: true })
 
         super({
@@ -34,7 +39,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: UserPayload) {
         try {
-            return tokenPayloadSchema.parse(payload)
+            const parsed = tokenPayloadSchema.parse(payload)
+            
+            // Grava a sessão em nível de requisição usando o CLS (Continuation Local Storage)
+            this.cls.set('user', {
+              userId: parsed.user.id,
+              companyId: parsed.user.companyId,
+            });
+
+            return parsed;
         } catch (error) {
             if (error instanceof ZodError) {
                 throw new BadRequestException({
@@ -44,6 +57,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 })
             }
         }
-
     }
 }

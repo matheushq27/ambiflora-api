@@ -4,6 +4,7 @@ import { PassportModule } from "@nestjs/passport";
 import {ConfigService} from '@nestjs/config'
 import { JwtStrategy } from "./jwt.strategy";
 import { Env } from '@/common/env';
+import { UserCacheService } from '@/application/services/user-cache.service';
 
 
 @Module({
@@ -21,6 +22,7 @@ import { Env } from '@/common/env';
             }
         },
     })],
-    providers: [JwtStrategy]
+    providers: [JwtStrategy, UserCacheService],
+    exports: [UserCacheService]
 })
 export class AuthModule{}

@@ -7,6 +7,8 @@ import { TwoCaptchaModule } from './infrastructure/services/two-captcha/two-capt
 import { AuthModule } from './infrastructure/auth/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { envSchema } from './common/env';
+import { RedisModule } from './infrastructure/data/redis/redis.module';
+import { ClsModule } from 'nestjs-cls';
 import { UsersModule } from './infrastructure/modules/users.module';
 import { PrismaModule } from './infrastructure/database/prisma/prisma.module';
 import { CompaniesModule } from './infrastructure/modules/companies.module';
@@ -34,6 +36,11 @@ import { EmailQueueModule } from './infrastructure/notifications/email-queue/ema
     UsersModule,
     CompaniesModule,
     PrismaModule,
+    RedisModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
     AuthenticateModule, 
     ScrapeProcessesModule,
     EmailsModule,
