@@ -2,17 +2,46 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: ambiflora-db-pg
-    image: postgres
+    container_name: ambiflora-db
+    image: postgres:15-alpine
+    restart: always
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: ambiflora-db
-      PGDATA: /data/postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./data/pg:/data/postgres
+      - ./docker/data/postgres:/var/lib/postgresql/data
 
+  redis-cache:
+    container_name: ambiflora-redis
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6380:6379"
 
-      
+  redis-commander:
+    container_name: ambiflora-redis-ui
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis-cache:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis-cache
+
+  mailpit:
+    container_name: ambiflora-mailpit
+    image: axllent/mailpit:latest
+    restart: always
+    ports:
+      - "8025:8025" # Interface Web
+      - "1025:1025" # SMTP
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - ./docker/data/mailpit:/data
