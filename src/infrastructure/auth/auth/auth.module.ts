@@ -17,8 +17,8 @@ import { UserCacheService } from '@/application/services/user-cache.service';
 
             return {
                 signOptions: {algorithm: 'RS256'},
-                privateKey: Buffer.from(privateKey, 'base64'),
-                publicKey: Buffer.from(publicKey, 'base64')
+                privateKey: Buffer.from(privateKey, 'base64').toString(),
+                publicKey: Buffer.from(publicKey, 'base64').toString()
             }
         },
     })],

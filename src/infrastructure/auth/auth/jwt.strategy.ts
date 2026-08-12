@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: Buffer.from(publicKey, 'base64'),
+            secretOrKey: Buffer.from(publicKey, 'base64').toString(),
             algorithms: ['RS256']
         })
     }
