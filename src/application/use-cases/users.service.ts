@@ -30,11 +30,11 @@ export class UsersService {
   async create(createUserDto: CreateUserDto, companyId?: number) {
     const { name, email, surname, userType } = createUserDto
 
-    const userExist = await this.findOne({
-      email
+    const userExist = await this.prisma.user.findFirst({
+      where: { email }
     })
 
-    if (userExist.user) {
+    if (userExist) {
       throw new BadRequestException(`O email ${email} já está cadastrado em nosso sistema`)
     }
 
