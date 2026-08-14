@@ -141,9 +141,6 @@ export class AnmProcessesService {
       })
     }
 
-    console.log(JSON.stringify(where))
-
-
     const [processes, total] = await this.prisma.$transaction([
       this.prisma.processo.findMany({
         relationLoadStrategy: 'join',
@@ -162,8 +159,6 @@ export class AnmProcessesService {
         where,
       })
     ])
-
-    console.log(onlyProcessNumbers)
 
     const processNumberId = processes.map((p) => {
       return p.DSProcesso
@@ -233,7 +228,6 @@ export class AnmProcessesService {
 
 
     const pagination = this.pagination.paginate({ total, page })
-    console.log(processoSubstancia)
     return {
       data: processes.map((process) => {
         const { BTAtivo, DSProcesso, NRProcesso, NRAnoProcesso, FaseProcesso, TipoRequerimento } = process
