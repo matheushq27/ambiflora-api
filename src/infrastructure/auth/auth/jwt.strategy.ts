@@ -16,7 +16,7 @@ const tokenPayloadSchema = z.object({
         surname: z.string(),
         email: z.string(),
         userType: z.enum(['SUPER_ADMIN', 'DEVELOPER', 'ADMIN', 'USER']),
-        companyId: z.number(),
+        companyId: z.number().nullable().optional(),
     })
 })
 
