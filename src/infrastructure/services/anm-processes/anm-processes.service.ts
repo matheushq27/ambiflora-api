@@ -373,25 +373,25 @@ export class AnmProcessesService {
   }
 
   async findHoldersByName(name: string) {
-
-    const processesPrisma = this.prisma.paginationExtension()
-    const [holders] = await processesPrisma.pessoa.paginate({
+    const holders = await this.prisma.pessoa.findMany({
       where: {
         NMPessoa: {
           contains: name,
           mode: 'insensitive'
         }
-      }
-    }).withPages({
-      limit: 10,
-      page: 1,
-      includePageCount: true,
+      },
+      select: {
+        IDPessoa: true,
+        NMPessoa: true,
+        NRCPFCNPJ: true
+      },
+      distinct: ['NMPessoa'],
+      take: 10
     })
 
     return {
       data: holders
     }
-
   }
 
   mapResults(process: any) {
