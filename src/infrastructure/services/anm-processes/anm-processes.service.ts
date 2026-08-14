@@ -44,38 +44,40 @@ export class AnmProcessesService {
     }
 
     const where: Prisma.ProcessoWhereInput = {}
-    const whereProcessoPessoa: Prisma.ProcessoPessoaWhereInput | undefined = undefined
+
+    const pessoaConditions: any = {}
 
     if (cpfCnpj) {
-      where.ProcessoPessoa = {
-        some: {
-          Pessoa: {
-            NRCPFCNPJ: cpfCnpj
-          }
-        }
+      pessoaConditions.NRCPFCNPJ = cpfCnpj
+    }
+
+    if (name) {
+      pessoaConditions.NMPessoa = {
+        contains: name,
+        mode: 'insensitive'
       }
     }
+
+    const processoPessoaSome: any = {}
 
     if (processNumber) {
       where.DSProcesso = processNumber
     }
 
-    if (name) {
-      where.ProcessoPessoa = {
-        some: {
-          Pessoa: {
-            NMPessoa: {
-              contains: name,
-              mode: 'insensitive'
-            }
-          }
-        }
+    if (Object.keys(pessoaConditions).length > 0) {
+      processoPessoaSome.Pessoa = pessoaConditions
+    }
+
+    if (relationship && relationship !== '0') {
+      processoPessoaSome.TipoRelacao = {
+        IDTipoRelacao: relationship
       }
     }
 
-    if (relationship !== '0') {
-      where.ProcessoPessoa.some.TipoRelacao.IDTipoRelacao = relationship
-      whereProcessoPessoa.IDTipoRelacao = relationship
+    if (Object.keys(processoPessoaSome).length > 0) {
+      where.ProcessoPessoa = {
+        some: processoPessoaSome
+      }
     }
 
     if (active === 'S' || active === 'N') {
