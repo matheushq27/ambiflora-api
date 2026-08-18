@@ -11,7 +11,7 @@ import type { AppClsStore } from '@/application/services/user-cache.service';
 
 const tokenPayloadSchema = z.object({
     user: z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string(),
         surname: z.string(),
         email: z.string(),

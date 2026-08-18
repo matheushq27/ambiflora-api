@@ -30,7 +30,7 @@ export class AnmProcessesService {
     private readonly prisma: PrismaService,
     protected pagination: Pagination,
   ) { }
-  async consult({ cpfCnpj, active, relationship, name, processNumber, onlyProcessNumbers, monitored, folderUUID }: ConsultParams, paginate = { page: 1, perPage: 10 }, userId: number) {
+  async consult({ cpfCnpj, active, relationship, name, processNumber, onlyProcessNumbers, monitored, folderUUID }: ConsultParams, paginate = { page: 1, perPage: 10 }, userId: string) {
 
     const { page, perPage } = paginate
 
@@ -455,7 +455,7 @@ export class AnmProcessesService {
     }
   }
 
-  async notMonitorProject({ processNumber, userId }: { processNumber: string, userId: number }) {
+  async notMonitorProject({ processNumber, userId }: { processNumber: string, userId: string }) {
     const monitored = await this.prisma.monitoredProcesses.findFirst({
       where: {
         processNumber,
@@ -515,7 +515,7 @@ export class AnmProcessesService {
     })
   }
 
-  async monitorMultipleProject({ processNumbers, folderId, userId }: { processNumbers: string[], folderId: string, userId: number }) {
+  async monitorMultipleProject({ processNumbers, folderId, userId }: { processNumbers: string[], folderId: string, userId: string }) {
 
     const processoEventos = await this.prisma.processoEvento.findMany({
       where: {

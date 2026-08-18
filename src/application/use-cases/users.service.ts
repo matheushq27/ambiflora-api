@@ -9,7 +9,7 @@ import { Pagination } from 'prisma/helpers/pagination';
 
 
 interface findOneParams {
-  id?: number
+  id?: string
   email?: string
 }
 
@@ -179,7 +179,7 @@ export class UsersService {
     }
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const { name, surname, password } = updateUserDto
 
     const { user } = await this.findOne({ id })
@@ -200,7 +200,7 @@ export class UsersService {
     }
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 }

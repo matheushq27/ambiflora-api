@@ -6,13 +6,13 @@ import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 
 export interface AppClsStore extends ClsStore {
   user: {
-    userId: number;
+    userId: string;
     companyId: number | null;
   };
 }
 
 export interface UserSession {
-  id: number;
+  id: string;
   name: string;
   surname: string;
   email: string;
@@ -36,7 +36,7 @@ export class UserCacheService {
     private cls: ClsService<AppClsStore>,
   ) {}
 
-  private getSessionKey(userId: number): string {
+  private getSessionKey(userId: string): string {
     return `users:${userId}:session`;
   }
 
@@ -69,7 +69,7 @@ export class UserCacheService {
     }
   }
 
-  async invalidateUserSession(userId: number): Promise<void> {
+  async invalidateUserSession(userId: string): Promise<void> {
     await this.cacheManager.del(this.getSessionKey(userId));
   }
 

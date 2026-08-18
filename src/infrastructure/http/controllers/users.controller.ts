@@ -18,7 +18,7 @@ export class UsersController {
   @HttpCode(201)
   create(@Body() createUserDto: CreateUserDto, @CurrentUser() userPayload: UserPayload) {
 
-    return this.usersService.create(createUserDto, userPayload.user.id);
+    return this.usersService.create(createUserDto, userPayload.user.companyId ?? undefined);
   }
 
   @Get()
@@ -43,19 +43,19 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.usersService.findOne({
       id
     });
   }
 
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }

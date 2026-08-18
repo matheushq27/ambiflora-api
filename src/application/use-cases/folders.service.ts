@@ -6,7 +6,7 @@ import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 export class FoldersService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(data: { name: string, userId: number }) {
+    async create(data: { name: string, userId: string }) {
         if (!data.name) {
             throw new BadRequestException('Nome da pasta é obrigatório')
         }
@@ -27,7 +27,7 @@ export class FoldersService {
         }
     }
 
-    async findManyUser(userId: number, { name, page, perPage }: { name: string, page: number, perPage: number }) {
+    async findManyUser(userId: string, { name, page, perPage }: { name: string, page: number, perPage: number }) {
         const customerPrisma = this.prisma.paginationExtension()
         const [folders, pagination] = await customerPrisma.folders.paginate({
             where: {
@@ -106,7 +106,7 @@ export class FoldersService {
         }
     }
 
-    async findManyUserOptions(userId: number) {
+    async findManyUserOptions(userId: string) {
         const options = await this.prisma.folders.findMany({
             where: {
                 userId

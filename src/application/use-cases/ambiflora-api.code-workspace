@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../ambiflora-next"
+		},
+		{
+			"path": "../../../../ambiflora-web"
+		}
+	],
+	"settings": {}
+}
